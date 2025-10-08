@@ -1,0 +1,14 @@
+app:
+  database:
+    path: ${user.dir}/data/magazzino.db
+
+spring:
+  datasource:
+    url: jdbc:sqlite:${app.database.path}
+    driver-class-name: org.sqlite.JDBC
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database-platform: com.ferramenta.magazzino.config.SQLiteDialect
