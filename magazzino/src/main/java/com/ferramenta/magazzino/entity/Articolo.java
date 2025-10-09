@@ -12,6 +12,8 @@ public class Articolo {
 
     private String nome;
     private int quantita;
+
+    @Column(unique = true)
     private String codice;
     private String categoria;
 }

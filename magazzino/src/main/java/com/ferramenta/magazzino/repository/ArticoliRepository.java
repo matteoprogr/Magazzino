@@ -38,4 +38,6 @@ public interface ArticoliRepository  extends JpaRepository<Articolo, Long> {
             @Param("newName") String newName);
 
 
+    @Query(value = "SELECT id FROM Articolo ORDER BY id DESC LIMIT 1", nativeQuery = true)
+    Integer findLastId();
 }

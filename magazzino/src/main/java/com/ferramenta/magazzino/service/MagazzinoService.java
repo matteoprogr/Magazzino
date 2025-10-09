@@ -7,6 +7,8 @@ import com.ferramenta.magazzino.repository.ArticoliRepository;
 import com.ferramenta.magazzino.repository.CategoriaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.text.Normalizer;
 import java.util.List;
 import java.util.Map;
 
@@ -23,14 +25,15 @@ public class MagazzinoService {
     }
 
     public void addArticolo(ArticoloDto dto){
-        addCategoria(dto.getCategoria());
+        dto.setCategoria(addCategoria(dto.getCategoria()));
 
+        dto.setCodice(creaCodiceByNomeAndCategoria(dto.getNome(), dto.getCategoria()));
         Articolo articolo = dtoToArticoloWithoutId(dto);
         articoliRepository.save(articolo);
     }
 
     public void updateArticolo(ArticoloDto dto){
-        addCategoria(dto.getCategoria());
+        dto.setCategoria(addCategoria(dto.getCategoria()));
 
         Articolo articolo = dtoToArticoloWithoutId(dto);
         articolo.setId(dto.getId());
@@ -43,7 +46,6 @@ public class MagazzinoService {
             articolo.setId(id);
             articoliRepository.delete(articolo);
         }
-
     }
 
     public List<Articolo> ricercaArticoli(String nome, String categoria, String codice, Integer min, Integer max, int limit, int offset){
@@ -59,12 +61,34 @@ public class MagazzinoService {
         return articolo;
     }
 
-    public void addCategoria(String categoria){
-        if(categoriaRepository.findByNome(categoria) == null){
-            Categoria cat = new Categoria();
-            cat.setNome(capitalize(categoria));
-            categoriaRepository.save(cat);
+    private String creaCodiceByNomeAndCategoria(String nome, String categoria){
+        String cat = Normalizer.normalize(categoria, Normalizer.Form.NFD).substring(0,3).replaceAll("\\p{M}","");
+        String n = Normalizer.normalize(nome, Normalizer.Form.NFD).replaceAll("\\p{M}","").replaceAll("(?i)[AEIOU]|\\W]","");
+        StringBuilder codiceBase = new StringBuilder(cat + "-" + n);
+        int codLength = codiceBase.length();
+        int sizeCod = 7;
+        if(codLength < sizeCod){
+            int diff = sizeCod - codLength;
+            codiceBase.append("X".repeat(Math.max(0, diff)));
+        }else if(codLength > sizeCod){
+            codiceBase = new StringBuilder(codiceBase.substring(0, sizeCod));
         }
+
+        String lastId = String.valueOf(articoliRepository.findLastId());
+        if(lastId.equals("null")) lastId = "0";
+        String codice = codiceBase + "0" + lastId;
+        return codice.toUpperCase();
+    }
+
+    public String addCategoria(String categoria){
+        String capitalized = capitalize(categoria);
+        if(categoriaRepository.findByNome(capitalized) == null){
+            Categoria cat = new Categoria();
+            cat.setNome(capitalized);
+            categoriaRepository.save(cat);
+            return capitalized;
+        }
+        return capitalized;
     }
 
     private String capitalize(String categoria){

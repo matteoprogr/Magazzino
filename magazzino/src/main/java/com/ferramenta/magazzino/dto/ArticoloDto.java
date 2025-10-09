@@ -17,11 +17,9 @@ public class ArticoloDto {
     @Min(value = 0, message = "La quantità non puo essere negativa")
     private int quantita;
 
-    @NotBlank(message = "Il codice non puo essere vuoto")
-    @Size(min = 2, max = 20, message = "Il codice deve avere almeno 2 caratteri e massimo 20")
     private String codice;
 
     @NotBlank(message = "La categoria non può essere vuota")
-    @Size(min = 2, max = 30, message = "La categoria deve avere almeno 3 caratteri e massimo 30")
+    @Size(min = 3, max = 30, message = "La categoria deve avere almeno 3 caratteri e massimo 30")
     private String categoria;
 }
