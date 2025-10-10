@@ -49,7 +49,7 @@ public class MagazzinoService {
     }
 
     public List<Articolo> ricercaArticoli(String nome, String categoria, String codice, Integer min, Integer max, int limit, int offset){
-    return articoliRepository.searchArticoli(nome, categoria, codice,min, max, limit, offset);
+    return articoliRepository.searchArticoli(nome, capitalize(categoria), codice,min, max, limit, offset);
     }
 
     private Articolo dtoToArticoloWithoutId(ArticoloDto dto){
@@ -92,9 +92,14 @@ public class MagazzinoService {
     }
 
     private String capitalize(String categoria){
-        String cat = categoria.substring(0,1).toUpperCase();
-        String newCategoria = categoria.substring(1).toLowerCase();
-        return cat + newCategoria;
+        if(categoria != null){
+            String cat = categoria.substring(0,1).toUpperCase();
+            String newCategoria = categoria.substring(1).toLowerCase();
+            return cat + newCategoria;
+        }else {
+            return null;
+        }
+
     }
 
     @Transactional

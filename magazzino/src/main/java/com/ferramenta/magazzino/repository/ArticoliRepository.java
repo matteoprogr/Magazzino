@@ -15,8 +15,8 @@ public interface ArticoliRepository  extends JpaRepository<Articolo, Long> {
     @Query(value = """
    SELECT * FROM articolo
    WHERE (:nome IS NULL OR LOWER(nome) LIKE LOWER(CONCAT('%', :nome, '%')))
-    AND(:categoria IS NULL OR categoria = :categoria)
-    AND(:codice IS NULL OR codice = :codice)
+    AND(:categoria IS NULL OR LOWER(categoria) LIKE(CONCAT('%', :categoria, '%')))
+    AND(:codice IS NULL OR LOWER(codice) LIKE(CONCAT('%', :codice, '%')))
     AND((:minQuantita IS NULL OR quantita >= :minQuantita)
         AND(:maxQuantita IS NULL OR quantita <= :maxQuantita))
     LIMIT :limit OFFSET :offset

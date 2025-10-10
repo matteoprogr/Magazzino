@@ -1,0 +1,85 @@
+body {
+  margin: 0;
+  font-family: "Segoe UI", Roboto, sans-serif;
+  background-color: #f4f4f4;
+  color: #333;
+}
+
+/* Navbar */
+.desktop-nav {
+  background-color: #333;
+  color: white;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.desktop-nav .nav-links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.desktop-nav .nav-links a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.desktop-nav .nav-links a:hover {
+  text-decoration: underline;
+}
+
+
+.page-section {
+  display: none;
+  padding: 20px;
+}
+
+.page-section.active {
+  display: block;
+}
+
+h1, h2 {
+  color: #444;
+}
+
+.form-container {
+  margin: 20px 0;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+input, button {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+button {
+  background-color: #4CAF50;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+th {
+  background-color: #333;
+  color: white;
+}

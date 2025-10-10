@@ -5,9 +5,7 @@ import com.ferramenta.magazzino.dto.ArticoloDto;
 import com.ferramenta.magazzino.entity.Articolo;
 import com.ferramenta.magazzino.entity.Categoria;
 import com.ferramenta.magazzino.service.MagazzinoService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,7 +24,7 @@ public class MagazzinoController {
     }
 
     @PostMapping("/aggiungi")
-    public ResponseDto aggiungiArticolo(@RequestBody ArticoloDto articoloDto){
+    public ResponseDto aggiungiArticolo(@Valid @RequestBody ArticoloDto articoloDto){
 
         try{
             magazzinoService.addArticolo(articoloDto);
@@ -38,7 +36,7 @@ public class MagazzinoController {
     }
 
     @PutMapping("/update")
-    public ResponseDto modificaArticolo(@RequestBody ArticoloDto articoloDto){
+    public ResponseDto modificaArticolo(@Valid @RequestBody ArticoloDto articoloDto){
 
         try{
             magazzinoService.updateArticolo(articoloDto);
