@@ -1,6 +1,7 @@
 package com.ferramenta.magazzino.service;
 
 import com.ferramenta.magazzino.dto.ArticoloDto;
+import com.ferramenta.magazzino.dto.EntityResponseDto;
 import com.ferramenta.magazzino.entity.Articolo;
 import com.ferramenta.magazzino.entity.Categoria;
 import com.ferramenta.magazzino.repository.ArticoliRepository;
@@ -48,8 +49,10 @@ public class MagazzinoService {
         }
     }
 
-    public List<Articolo> ricercaArticoli(String nome, String categoria, String codice, Integer min, Integer max, int limit, int offset){
-    return articoliRepository.searchArticoli(nome, capitalize(categoria), codice,min, max, limit, offset);
+    public EntityResponseDto ricercaArticoli(String nome, String categoria, String codice, Integer min, Integer max, int limit, int offset){
+    List<Articolo> list = articoliRepository.searchArticoli(nome, capitalize(categoria), codice,min, max, limit, offset);
+    long count = articoliRepository.countArticoli(nome, capitalize(categoria), codice,min, max);
+    return new EntityResponseDto(list,count);
     }
 
     private Articolo dtoToArticoloWithoutId(ArticoloDto dto){
@@ -124,7 +127,9 @@ public class MagazzinoService {
         articoliRepository.updateCategoriainArticoli(oldCategoria, newName);
     }
 
-    public List<Categoria> getCategoria(String categoria){
-        return categoriaRepository.findByNomeStartingWith(categoria);
+    public EntityResponseDto getCategoria(String categoria, int limit, int offset){
+        List<Categoria> categorie = categoriaRepository.searchCategorie(categoria, limit, offset);
+        long count = categoriaRepository.countCategorie(categoria);
+        return new EntityResponseDto(categorie, count);
     }
 }

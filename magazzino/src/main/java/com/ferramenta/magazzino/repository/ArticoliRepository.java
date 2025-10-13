@@ -31,6 +31,23 @@ public interface ArticoliRepository  extends JpaRepository<Articolo, Long> {
             @Param("offset") int offset
     );
 
+    @Query(value = """
+   SELECT COUNT(*) FROM articolo
+   WHERE (:nome IS NULL OR LOWER(nome) LIKE LOWER(CONCAT('%', :nome, '%')))
+     AND (:categoria IS NULL OR LOWER(categoria) LIKE LOWER(CONCAT('%', :categoria, '%')))
+     AND (:codice IS NULL OR LOWER(codice) LIKE LOWER(CONCAT('%', :codice, '%')))
+     AND ((:minQuantita IS NULL OR quantita >= :minQuantita)
+         AND (:maxQuantita IS NULL OR quantita <= :maxQuantita))
+   """, nativeQuery = true)
+    long countArticoli(
+            @Param("nome") String nome,
+            @Param("categoria") String categoria,
+            @Param("codice") String codice,
+            @Param("minQuantita") Integer minQuantita,
+            @Param("maxQuantita") Integer maxQuantita
+    );
+
+
     @Modifying
     @Query(value = "UPDATE articolo SET categoria = :newName WHERE categoria = :oldCategoria", nativeQuery = true)
     int updateCategoriainArticoli(

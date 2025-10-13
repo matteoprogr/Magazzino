@@ -20,52 +20,96 @@
 
 
 <section id="home" class="page-section active">
-    <h4>Ricerca Articoli</h4>
-    <form id="ricercaForm" class="form-container">
-        <input type="text" id="nomeInput" placeholder="Nome">
-        <input type="text" id="codiceInput" placeholder="Codice">
-        <input type="text" id="categoriaInput" placeholder="Categoria">
-        <input type="number" id="minInput" placeholder="min Quantità">
-        <input type="number" id="maxInput" placeholder="max Quantità">
-        <button type="submit">Cerca</button>
-    </form>
-    <h4>Aggiungi Articoli</h4>
-    <form id="addForm" class="form-container">
-        <input type="text" id="addNome" placeholder="Nome">
-        <input type="text" id="addCategoria" placeholder="Categoria">
-        <input type="number" id="addQuantita" placeholder="Quantità">
-        <button type="submit">Aggiungi</button>
-    </form>
-    <table id="tabellaRicerca">
-        <thead>
-        <tr>
-            <th><input type="checkbox" id="allCheck"></th>
-            <th>Nome</th>
-            <th>Codice</th>
-            <th>Categoria</th>
-            <th>Quantità</th>
-        </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+
+    <div class="ricerca-container">
+        <div class="ricerca-form">
+            <h4>Aggiungi Articoli</h4>
+            <label class="formLabel" id="validationError"></label>
+            <form id="addForm" class="form-container">
+                <input type="text" id="addNome" placeholder="Nome">
+                <input type="text" id="addCategoria" placeholder="Categoria">
+                <input type="number" id="addQuantita" placeholder="Quantità" max="1000000000">
+                <button type="submit">Aggiungi</button>
+            </form>
+            <h4>Ricerca Articoli</h4>
+            <form id="ricercaForm" class="form-container">
+                <input type="text" id="nomeInput" placeholder="Nome">
+                <input type="text" id="codiceInput" placeholder="Codice">
+                <input type="text" id="categoriaInput" placeholder="Categoria">
+                <input type="number" id="minInput" placeholder="min Quantità" min="0">
+                <input type="number" id="maxInput" placeholder="max Quantità" max="1000000000">
+                <button type="submit">Cerca</button>
+            </form>
+        </div>
+
+        <div class="tabella-container">
+            <label id="totRisultati"></label>
+            <table id="tabellaRicerca">
+                <colgroup>
+                    <col style="width: 35%;">
+                    <col style="width: 25%;">
+                    <col style="width: 30%;">
+                    <col style="width: 10%;">
+                </colgroup>
+                <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Codice</th>
+                    <th>Categoria</th>
+                    <th>Quantità</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div id="pagination" class="pagination-container">
+                <button id="deleteBtn">Delete</button>
+                <button id="prevPage">← Precedente</button>
+                <span id="pageInfo">1</span>
+                <button id="nextPage">Successiva →</button>
+            </div>
+        </div>
+    </div>
 </section>
 
 <!-- GESTIONE CATEGORIE -->
 <section id="gestione" class="page-section">
-    <h2>Gestione Categorie</h2>
-    <div class="form-container">
-        <input type="text" id="nomeCategoria" placeholder="Nome categoria">
-        <button id="aggiungiCategoria">Aggiungi</button>
+    <div class="ricercaCat-container">
+        <div class="ricerca-form">
+            <h4>Ricerca Categorie</h4>
+            <form id="cercaCategoriaForm" class="form-container">
+                <input type="text" id="categoriaSearch" placeholder="Nome categoria">
+                <button type="submit">Cerca</button>
+            </form>
+            <h4>Aggiungi Categorie</h4>
+            <label class="formLabel" id="validationErrorCategoria"></label>
+            <form id="addCategoriaForm" class="form-container">
+                <input type="text" id="categoriaInsert" placeholder="Nome categoria">
+                <button type="submit">Aggiungi</button>
+            </form>
+        </div>
+
+        <div class="tabellaCat-container">
+            <label id="risultatiCat"></label>
+            <table id="tabellaCategorie">
+                <colgroup>
+                    <col style="width: 4%;">
+                    <col style="width: 96%;">
+                </colgroup>
+                <thead>
+                <tr>
+                    <th></th>
+                    <th>Categoria</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div id="paginationCat" class="pagination-container">
+                <button id="prevPageCat">← Precedente</button>
+                <span id="pageInfoCat">1</span>
+                <button id="nextPageCat">Successiva →</button>
+            </div>
+        </div>
     </div>
-    <table id="tabellaCategorie">
-        <thead>
-        <tr>
-            <th></th>
-            <th>Categoria</th>
-        </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
 </section>
 
 <script type="module" src="main.js"></script>

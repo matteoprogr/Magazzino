@@ -3,6 +3,8 @@ body {
   font-family: "Segoe UI", Roboto, sans-serif;
   background-color: #f4f4f4;
   color: #333;
+  overflow: hidden;
+  height: 100vh;
 }
 
 /* Navbar */
@@ -44,6 +46,11 @@ h1, h2 {
   color: #444;
 }
 
+h4{
+    padding: 0;
+    margin: 0;
+}
+
 .form-container {
   margin: 20px 0;
   display: flex;
@@ -75,7 +82,7 @@ table {
 
 th, td {
   border: 1px solid #ddd;
-  padding: 10px;
+  padding: 3px;
   text-align: left;
 }
 
@@ -83,3 +90,78 @@ th {
   background-color: #333;
   color: white;
 }
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 10px;
+}
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 10px;
+}
+
+.pagination-container button {
+    background-color: #333;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.pagination-container button:disabled {
+    background-color: #777;
+    cursor: not-allowed;
+}
+
+.ricerca-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+    width: 100%;
+    overflow: hidden;
+}
+
+#deleteBtn{
+    background: indianred;
+}
+
+.selected{
+     background-color: #cce5ff;
+}
+
+.ricercaCat-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 2rem;
+    width: 100%;
+    overflow: hidden;
+}
+
+.formLabel{
+    font-size: 13px;
+}
+
+.ricerca-form {
+    flex: 0 0 100px;
+}
+
+.tabellaCat-container {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 30%;
+}
+
+.tabella-container {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+

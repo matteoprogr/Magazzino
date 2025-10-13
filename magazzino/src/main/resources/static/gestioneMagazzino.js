@@ -13,13 +13,17 @@ export function creaTabellaArticoli(data){
 
     data.forEach(a => {
         const tr = document.createElement('tr');
+        tr.setAttribute('id', a.id);
         tr.innerHTML = `
-            <td><input type="checkbox" value="${a.id}"></td>
             <td>${a.nome}</td>
             <td>${a.codice}</td>
             <td>${a.categoria}</td>
             <td>${a.quantita}</td>
         `;
+
+        tr.addEventListener('click', () => {
+            tr.classList.toggle("selected");
+        });
 
         tBody.appendChild(tr);
     });

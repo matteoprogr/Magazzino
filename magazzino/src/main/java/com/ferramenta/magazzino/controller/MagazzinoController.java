@@ -1,9 +1,9 @@
 package com.ferramenta.magazzino.controller;
 
+import com.ferramenta.magazzino.dto.CategoriaDto;
+import com.ferramenta.magazzino.dto.EntityResponseDto;
 import com.ferramenta.magazzino.dto.ResponseDto;
 import com.ferramenta.magazzino.dto.ArticoloDto;
-import com.ferramenta.magazzino.entity.Articolo;
-import com.ferramenta.magazzino.entity.Categoria;
 import com.ferramenta.magazzino.service.MagazzinoService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -60,17 +60,18 @@ public class MagazzinoController {
     }
 
     @GetMapping("/ricerca")
-    public List<Articolo> ricerca(
+    public EntityResponseDto ricerca(
             @RequestParam(required = false) String nome,
             @RequestParam(required = false) String categoria,
             @RequestParam(required = false) String codice,
             @RequestParam(required = false) Integer min,
             @RequestParam(required = false) Integer max,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "25") int size) {
 
         try{
             return magazzinoService.ricercaArticoli(nome, categoria, codice, min, max, size,page * size);
+
         }catch (Exception e){
             throw new RuntimeException(e);
         }
@@ -103,20 +104,23 @@ public class MagazzinoController {
     }
 
     @GetMapping("/ricercaCategorie")
-    public List<Categoria> ricercaCategorie(@RequestParam(required = false) String categoria){
+    public EntityResponseDto ricercaCategorie(
+            @RequestParam(required = false) String categoria,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "25") int size){
 
         try{
-            return magazzinoService.getCategoria(categoria);
+            return magazzinoService.getCategoria(categoria, size, page * size);
         }catch (Exception e){
             throw new RuntimeException(e);
         }
     }
 
     @PostMapping("/aggiungiCategoria")
-    public ResponseDto aggiungiCategoria(@RequestParam String categoria){
+    public ResponseDto aggiungiCategoria(@Valid @RequestBody CategoriaDto categoria){
 
         try{
-            magazzinoService.addCategoria(categoria);
+            magazzinoService.addCategoria(categoria.getNome());
         }catch (Exception e){
             return new ResponseDto("Errore durante l'aggiunta della categoria", HttpStatus.INTERNAL_SERVER_ERROR);
         }

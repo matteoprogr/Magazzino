@@ -13,8 +13,8 @@ export function creaTabellaCategoria(data){
     data.forEach( cat => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td><input type="checkbox" value="${a.id}"></td>
-            <td>${cat}</td>
+            <td><input type="checkbox" value="${cat.id}"></td>
+            <td>${cat.nome}</td>
         `;
 
         tBody.appendChild(tr);
