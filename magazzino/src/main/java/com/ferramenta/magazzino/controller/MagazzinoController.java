@@ -1,5 +1,6 @@
 package com.ferramenta.magazzino.controller;
 
+import com.ferramenta.magazzino.advice.AlreadyExistsException;
 import com.ferramenta.magazzino.dto.CategoriaDto;
 import com.ferramenta.magazzino.dto.EntityResponseDto;
 import com.ferramenta.magazzino.dto.ResponseDto;
@@ -8,7 +9,6 @@ import com.ferramenta.magazzino.service.MagazzinoService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.Map;
 
@@ -63,14 +63,19 @@ public class MagazzinoController {
     public EntityResponseDto ricerca(
             @RequestParam(required = false) String nome,
             @RequestParam(required = false) String categoria,
+            @RequestParam(required = false) String ubicazione,
             @RequestParam(required = false) String codice,
+            @RequestParam(required = false) String da,
+            @RequestParam(required = false) String a,
             @RequestParam(required = false) Integer min,
             @RequestParam(required = false) Integer max,
+            @RequestParam(required = false) Integer minCosto,
+            @RequestParam(required = false) Integer maxCosto,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "25") int size) {
 
         try{
-            return magazzinoService.ricercaArticoli(nome, categoria, codice, min, max, size,page * size);
+            return magazzinoService.ricercaArticoli(nome, categoria, ubicazione, codice, da, a, min, max, minCosto, maxCosto,size,page * size);
 
         }catch (Exception e){
             throw new RuntimeException(e);
@@ -84,6 +89,8 @@ public class MagazzinoController {
 
         try{
             magazzinoService.updateCategoria(oldCategoria, newName);
+        }catch (AlreadyExistsException e){
+            return new ResponseDto(e.getMessage(), HttpStatus.BAD_REQUEST);
         }catch (Exception e){
             return new ResponseDto("Errore durante l'update della categoria", HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -92,7 +99,7 @@ public class MagazzinoController {
     }
 
     @DeleteMapping("/deleteCategorie")
-    public ResponseDto eliminaCategorie(@RequestParam Map<String, Integer> ids){
+    public ResponseDto eliminaCategorie(@RequestBody Map<String, Integer> ids){
 
         try{
             magazzinoService.deleteCategorie(ids);

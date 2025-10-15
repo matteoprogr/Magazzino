@@ -12,10 +12,14 @@ export function creaTabellaCategoria(data){
 
     data.forEach( cat => {
         const tr = document.createElement('tr');
+        tr.setAttribute('id', cat.id);
         tr.innerHTML = `
-            <td><input type="checkbox" value="${cat.id}"></td>
             <td>${cat.nome}</td>
         `;
+
+       tr.addEventListener('click', () => {
+            tr.classList.toggle("selected");
+        });
 
         tBody.appendChild(tr);
     });

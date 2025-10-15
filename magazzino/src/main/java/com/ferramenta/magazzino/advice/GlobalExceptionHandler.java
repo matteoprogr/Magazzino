@@ -26,5 +26,14 @@ public class GlobalExceptionHandler {
         response.put("status", HttpStatus.BAD_REQUEST.value());
         return ResponseEntity.badRequest().body(response);
     }
+
+    @ExceptionHandler(AlreadyExistsException.class)
+    public ResponseEntity<Map<String, Object>> handleValidationErrors(AlreadyExistsException ex) {
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", String.join(", ", ex.getMessage()));
+        response.put("status", HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.badRequest().body(response);
+    }
 }
 

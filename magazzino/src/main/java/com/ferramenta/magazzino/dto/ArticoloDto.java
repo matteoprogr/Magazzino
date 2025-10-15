@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.util.Date;
+
 @Data
 public class ArticoloDto {
 
@@ -17,9 +19,18 @@ public class ArticoloDto {
     @Min(value = 0, message = "La quantità non puo essere negativa")
     private int quantita;
 
+    @Min(value = 0, message = "Il costo non puo essere negativo")
+    private int costo;
+
     private String codice;
 
     @NotBlank(message = "La categoria non può essere vuota")
     @Size(min = 3, max = 30, message = "La categoria deve avere almeno 3 caratteri e massimo 30")
     private String categoria;
+
+    @NotBlank(message = "L'ubicazione non può essere vuota")
+    @Size(min = 3, max = 30, message = "La categoria deve avere almeno 3 caratteri e massimo 30")
+    private String ubicazione;
+
+    private String dataInserimento;
 }

@@ -16,17 +16,27 @@ public interface ArticoliRepository  extends JpaRepository<Articolo, Long> {
    SELECT * FROM articolo
    WHERE (:nome IS NULL OR LOWER(nome) LIKE LOWER(CONCAT('%', :nome, '%')))
     AND(:categoria IS NULL OR LOWER(categoria) LIKE(CONCAT('%', :categoria, '%')))
+    AND(:ubicazione IS NULL OR LOWER(ubicazione) LIKE(CONCAT('%', :ubicazione, '%')))
     AND(:codice IS NULL OR LOWER(codice) LIKE(CONCAT('%', :codice, '%')))
     AND((:minQuantita IS NULL OR quantita >= :minQuantita)
-        AND(:maxQuantita IS NULL OR quantita <= :maxQuantita))
+    AND(:maxQuantita IS NULL OR quantita <= :maxQuantita))
+    AND((:minCosto IS NULL OR quantita >= :minCosto)
+    AND(:maxCosto IS NULL OR quantita <= :maxCosto))
+    AND ((:da IS NULL OR data_inserimento >= :da)
+    AND (:a IS NULL OR data_inserimento <= :a))
     LIMIT :limit OFFSET :offset
    """, nativeQuery = true)
     List<Articolo> searchArticoli(
             @Param("nome") String nome,
             @Param("categoria") String categoria,
+            @Param("ubicazione") String ubicazione,
             @Param("codice") String codice,
+            @Param("da") String da,
+            @Param("a") String a,
             @Param("minQuantita") Integer minQuantita,
             @Param("maxQuantita") Integer maxQuantita,
+            @Param("minCosto") Integer minCosto,
+            @Param("maxCosto") Integer maxCosto,
             @Param("limit") int limit,
             @Param("offset") int offset
     );
@@ -57,4 +67,6 @@ public interface ArticoliRepository  extends JpaRepository<Articolo, Long> {
 
     @Query(value = "SELECT id FROM Articolo ORDER BY id DESC LIMIT 1", nativeQuery = true)
     Integer findLastId();
+
+    List<Articolo> findByCategoria(String categoria);
 }
