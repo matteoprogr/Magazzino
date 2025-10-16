@@ -12,6 +12,7 @@ export function creaTabellaArticoli(data){
     data.forEach(a => {
         const tr = document.createElement('tr');
         tr.setAttribute('id', a.id);
+        tr.setAttribute('richieste', a.richieste);
         const [y, m, d] = a.dataInserimento.split("-");
         const data = `${d}/${m}/${y}`;
         tr.innerHTML = `
@@ -26,7 +27,19 @@ export function creaTabellaArticoli(data){
 
         tr.addEventListener('click', () => {
             tr.classList.toggle("selected");
+            if(a.quantita <= 3){
+                tr.classList.toggle("redTr");
+            }
+            if(a.quantita <= 5 && a.quantita > 2){
+                tr.classList.toggle("yellowTr");
+            }
         });
+        if(a.quantita <= 2){
+            tr.classList.add("redTr");
+        }
+        if(a.quantita <= 5 && a.quantita > 2){
+            tr.classList.add("yellowTr");
+        }
 
         tBody.appendChild(tr);
     });
@@ -52,7 +65,8 @@ export async function createOption(articoli){
           tooltip: {
             trigger: 'item',
             formatter: function (params) {
-                  return `${params.name}: ${Number(params.value).toFixed(2)} <br>
+                  return `${params.name}<br>
+                          Quantità: ${Number(params.value).toFixed(2)} <br>
                           % sul totale: ${(Number(params.value)/ totale * 100).toFixed(2)} `;
                 }
           },
@@ -125,3 +139,51 @@ export function attachLegendHandler(chart) {
     });
 }
 
+export async function createOptionMerce(articoli){
+
+
+    option = {
+      title: {
+        text: 'Stacked Line'
+      },
+      tooltip: {
+        trigger: 'axis'
+      },
+      legend: {
+        data: ['Entrata', 'Uscita']
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+      },
+      toolbox: {
+        feature: {
+          saveAsImage: {}
+        }
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
+               'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre']
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
+          name: 'Entrata',
+          type: 'line',
+          data: [120, 132, 101, 134, 90, 230, 210]
+        },
+        {
+          name: 'Uscita',
+          type: 'line',
+          data: [220, 182, 191, 234, 290, 330, 310]
+        }
+      ]
+    };
+
+}

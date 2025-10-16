@@ -1,10 +1,7 @@
 package com.ferramenta.magazzino.controller;
 
 import com.ferramenta.magazzino.advice.AlreadyExistsException;
-import com.ferramenta.magazzino.dto.CategoriaDto;
-import com.ferramenta.magazzino.dto.EntityResponseDto;
-import com.ferramenta.magazzino.dto.ResponseDto;
-import com.ferramenta.magazzino.dto.ArticoloDto;
+import com.ferramenta.magazzino.dto.*;
 import com.ferramenta.magazzino.service.MagazzinoService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -67,6 +64,7 @@ public class MagazzinoController {
             @RequestParam(required = false) String codice,
             @RequestParam(required = false) String da,
             @RequestParam(required = false) String a,
+            @RequestParam(defaultValue = "richieste") String sortField,
             @RequestParam(required = false) Integer min,
             @RequestParam(required = false) Integer max,
             @RequestParam(required = false) Integer minCosto,
@@ -75,7 +73,7 @@ public class MagazzinoController {
             @RequestParam(defaultValue = "25") int size) {
 
         try{
-            return magazzinoService.ricercaArticoli(nome, categoria, ubicazione, codice, da, a, min, max, minCosto, maxCosto,size,page * size);
+            return magazzinoService.ricercaArticoli(nome, categoria, ubicazione, codice, da, a, min, max, minCosto, maxCosto,size,page * size, sortField);
 
         }catch (Exception e){
             throw new RuntimeException(e);
@@ -107,14 +105,14 @@ public class MagazzinoController {
             return new ResponseDto("Errore durante il delete della categoria", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return new ResponseDto("categoria eliminato con successo", HttpStatus.OK);
+        return new ResponseDto("Categoria eliminata con successo", HttpStatus.OK);
     }
 
     @GetMapping("/ricercaCategorie")
     public EntityResponseDto ricercaCategorie(
             @RequestParam(required = false) String categoria,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "25") int size){
+            @RequestParam(defaultValue = "10") int size){
 
         try{
             return magazzinoService.getCategoria(categoria, size, page * size);
@@ -124,15 +122,68 @@ public class MagazzinoController {
     }
 
     @PostMapping("/aggiungiCategoria")
-    public ResponseDto aggiungiCategoria(@Valid @RequestBody CategoriaDto categoria){
+    public ResponseDto aggiungiCategoria(@Valid @RequestBody UbicazioneDto ubicazione){
 
         try{
-            magazzinoService.addCategoria(categoria.getNome());
+            magazzinoService.addCategoria(ubicazione.getNome());
+        }catch (Exception e){
+            return new ResponseDto("Errore durante l'aggiunta dell'ubicazione", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseDto("Ubicazione aggiunto con successo", HttpStatus.OK);
+    }
+
+    @PutMapping("/updateUbicazione")
+    public ResponseDto modificaUbicazione(
+            @RequestParam String oldUbicazione,
+            @RequestParam String newName){
+
+        try{
+            magazzinoService.updateUbicazione(oldUbicazione, newName);
+        }catch (AlreadyExistsException e){
+            return new ResponseDto(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }catch (Exception e){
+            return new ResponseDto("Errore durante l'update dell'ubicazione", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseDto("Ubicazione modificata con successo", HttpStatus.OK);
+    }
+
+    @DeleteMapping("/deleteUbicazioni")
+    public ResponseDto deleteUbicazione(@RequestBody Map<String, Integer> ids){
+
+        try{
+            magazzinoService.deleteUbicazione(ids);
+        }catch (Exception e){
+            return new ResponseDto("Errore durante il delete dell'ubicazione", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseDto("Ubicazione eliminata con successo", HttpStatus.OK);
+    }
+
+    @GetMapping("/ricercaUbicazioni")
+    public EntityResponseDto ricercaUbicazione(
+            @RequestParam(required = false) String ubicazione,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size){
+
+        try{
+            return magazzinoService.getUbicazione(ubicazione, size, page * size);
+        }catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    @PostMapping("/aggiungiUbicazione")
+    public ResponseDto aggiungiUbicazione(@Valid @RequestBody UbicazioneDto ubicazione){
+
+        try{
+            magazzinoService.addUbicazione(ubicazione.getNome());
         }catch (Exception e){
             return new ResponseDto("Errore durante l'aggiunta della categoria", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return new ResponseDto("Categoria aggiunto con successo", HttpStatus.OK);
+        return new ResponseDto("Ubicazione aggiunta con successo", HttpStatus.OK);
     }
 
 }

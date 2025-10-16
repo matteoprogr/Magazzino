@@ -15,7 +15,7 @@
 <nav class="desktop-nav">
     <div class="nav-links">
         <a href="#" data-target="home">Home</a>
-        <a href="#" data-target="gestione">Categorie</a>
+        <a href="#" data-target="gestione">Gestione</a>
     </div>
 </nav>
 
@@ -25,12 +25,12 @@
     <div class="ricerca-container">
         <div class="ricerca-form">
             <h4>Aggiungi Articoli</h4>
-            <label class="formLabel" id="validationError"></label>
             <form id="addForm" class="form-container">
                 <input type="text" id="addNome" placeholder="Nome">
                 <input type="text" id="addCategoria" placeholder="Categoria">
                 <select id="selectCategoria"></select>
                 <input type="text" id="addUbicazione" placeholder="Ubicazione">
+                <select id="selectUbicazione"></select>
                 <input type="date" id="data" required>
                 <input type="number" id="addQuantita" placeholder="Quantità" max="1000000000">
                 <input type="number" id="addCosto" placeholder="Costo" max="1000000000">
@@ -41,13 +41,23 @@
                 <input type="text" id="nomeInput" placeholder="Nome">
                 <input type="text" id="codiceInput" placeholder="Codice">
                 <input type="text" id="categoriaInput" placeholder="Categoria">
+                <select id="selectCategoriaInput"></select>
                 <input type="text" id="ubicazioneInput" placeholder="Ubicazione">
-                <input type="date" id="data_da" required>
-                <input type="date" id="data_a" required>
+                <select id="selectUbicazioneInput"></select>
+                <label class="dataLabel">Da</label>
+                <input type="date" id="data_da">
+                <label class="dataLabel">A</label>
+                <input type="date" id="data_a">
                 <input type="number" id="minInput" placeholder="min Quantità" min="0">
                 <input type="number" id="maxInput" placeholder="max Quantità" max="1000000000">
                 <input type="number" id="minCostoInput" placeholder="min Costo" min="0">
                 <input type="number" id="maxCostoInput" placeholder="max Costo" max="1000000000">
+                <select id="selectSort">
+                    <option value="richieste">Seleziona Ordinamento</option>
+                    <option value="nome">Nome</option>
+                    <option value="quantita">Quantita</option>
+                    <option value="costo">Costo</option>
+                </select>
                 <button type="submit">Cerca</button>
             </form>
         </div>
@@ -60,9 +70,9 @@
                     <col style="width: 20%;">
                     <col style="width: 20%;">
                     <col style="width: 15%;">
-                    <col style="width: 5%;">
-                    <col style="width: 10%;">
-                    <col style="width: 10%;">
+                    <col style="width: 7%;">
+                    <col style="width: 7%;">
+                    <col style="width: 6%;">
                 </colgroup>
                 <thead>
                 <tr>
@@ -88,17 +98,50 @@
             <div id="modaleUpdate" class="modal hidden">
                 <div class="modal-content">
                     <h4>Modifica Articolo</h4>
-                    <input type="text" id="modNome" placeholder="Nome" >
-                    <input type="text" id="modCategoria" placeholder="Categoria">
-                    <select id="modSelectCategoria"></select>
-                    <input type="text" id="modUbicazione" placeholder="Ubicazione">
-                    <input type="text" id="modCodice" placeholder="Codice">
-                    <input type="number" id="modQuantita" placeholder="Quantità" max="1000000000">
-                    <input type="number" id="modCosto" placeholder="Costo" max="1000000000">
-                    <input type="date" id="modData" >
+                    <div class="row">
+                        <div class="column">
+                            <label for="modNome" class="labelMod">Nome</label>
+                            <input type="text" id="modNome" placeholder="Nome" >
+                        </div>
+                        <div class="column">
+                            <label for="modCodice" class="labelMod">Codice</label>
+                            <input type="text" id="modCodice" placeholder="Codice">
+                        </div>
+                    </div>
 
-                    <button id="btnSalvaUpdate">Salva</button>
-                    <button id="btnChiudiUpdate">Chiudi</button>
+
+                    <div class="row">
+                        <div class="column">
+                            <label for="modCategoria" class="labelMod">Categoria</label>
+                            <input type="text" id="modCategoria" placeholder="Categoria">
+                            <select id="modSelectCategoria"></select>
+                        </div>
+                        <div class="column">
+                            <label for="modUbicazione" class="labelMod">Ubicazione</label>
+                            <input type="text" id="modUbicazione" placeholder="Ubicazione">
+                            <select id="modSelectUbicazione"></select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="column">
+                            <label for="modQuantita" class="labelMod">Quantita</label><input type="number" id="modQuantita" placeholder="Quantità" max="1000000000">
+                        </div>
+                        <div class="column">
+                            <label for="modCosto" class="labelMod">Costo</label><input type="number" id="modCosto" placeholder="Costo" max="1000000000">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="column">
+                            <label for="modData" class="labelMod">Data Inserimento</label><input type="date" id="modData">
+                        </div>
+                        <div class="column">
+                            <label for="modDataOperazione" class="labelMod">Data Operazione</label><input type="date" id="modDataOperazione">
+                        </div>
+                    </div>
+                    <div class="row buttons">
+                        <button id="btnSalvaUpdate">Salva</button>
+                        <button id="btnChiudiUpdate">Chiudi</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -109,44 +152,91 @@
 <section id="gestione" class="page-section">
     <div class="ricercaCat-container">
         <div class="ricerca-form">
-            <h4>Ricerca Categorie</h4>
-            <form id="cercaCategoriaForm" class="form-container">
-                <input type="text" id="categoriaSearch" placeholder="Nome categoria">
-                <button type="submit">Cerca</button>
-            </form>
-            <h4>Aggiungi Categorie</h4>
-            <label class="formLabel" id="validationErrorCategoria"></label>
-            <form id="addCategoriaForm" class="form-container">
-                <input type="text" id="categoriaInsert" placeholder="Nome categoria">
-                <button type="submit">Aggiungi</button>
-            </form>
+            <div class="form-cat">
+                <h4>Ricerca Categorie</h4>
+                <form id="cercaCategoriaForm" class="form-container">
+                    <input type="text" id="categoriaSearch" placeholder="Nome categoria">
+                    <select id="selectCategoriaSearch"></select>
+                    <button type="submit">Cerca</button>
+                </form>
+                <h4>Aggiungi Categorie</h4>
+                <form id="addCategoriaForm" class="form-container">
+                    <input type="text" id="categoriaInsert" placeholder="Nome categoria">
+                    <button type="submit">Aggiungi</button>
+                </form>
+            </div>
+
+            <div class="form-ub">
+                <h4>Ricerca Ubicazioni</h4>
+                <form id="cercaUbicazioneForm" class="form-container">
+                    <input type="text" id="ubicazioneSearch" placeholder="Nome ubicazione">
+                    <select id="selectUbicazioneSearch"></select>
+                    <button type="submit">Cerca</button>
+                </form>
+                <h4>Aggiungi Ubicazioni</h4>
+                <form id="addUbicazioneForm" class="form-container">
+                    <input type="text" id="ubicazioneInsert" placeholder="Nome ubicazione">
+                    <button type="submit">Aggiungi</button>
+                </form>
+            </div>
         </div>
 
         <div class="tabellaCat-container">
-            <label id="risultatiCat"></label>
-            <table id="tabellaCategorie">
-                <thead>
-                <tr>
-                    <th>Categoria</th>
-                </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-            <div id="paginationCat" class="pagination-container">
-                <button id="deleteBtnCat">Delete</button>
-                <button id="prevPageCat">←</button>
-                <span id="pageInfoCat">1</span>
-                <button id="nextPageCat">→</button>
-                <button id="updateBtnCat">Update</button>
+            <div class="tab-cat">
+                <label id="risultatiCat"></label>
+                <table id="tabellaCategorie">
+                    <thead>
+                    <tr>
+                        <th>Categoria</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div id="paginationCat" class="pagination-container">
+                    <button id="deleteBtnCat">Delete</button>
+                    <button id="prevPageCat">←</button>
+                    <span id="pageInfoCat">1</span>
+                    <button id="nextPageCat">→</button>
+                    <button id="updateBtnCat">Update</button>
+                </div>
+
+                <div id="modaleUpdateCat" class="modal hidden">
+                    <div class="modal-content">
+                        <h4>Modifica Categoria</h4>
+                        <label id="errorAlreadyExists"></label>
+                        <input type="text" id="modNomeCat" placeholder="Nome" >
+                        <button id="btnSalvaUpdateCat">Salva</button>
+                        <button id="btnChiudiUpdateCat">Chiudi</button>
+                    </div>
+                </div>
             </div>
 
-            <div id="modaleUpdateCat" class="modal hidden">
-                <div class="modal-content">
-                    <h4>Modifica Categoria</h4>
-                    <label id="errorAlreadyExists"></label>
-                    <input type="text" id="modNomeCat" placeholder="Nome" >
-                    <button id="btnSalvaUpdateCat">Salva</button>
-                    <button id="btnChiudiUpdateCat">Chiudi</button>
+            <div class="form-ub">
+                <label id="risultatiUb"></label>
+                <table id="tabellaUbicazioni">
+                    <thead>
+                    <tr>
+                        <th>Ubicazione</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div id="paginationUb" class="pagination-container">
+                    <button id="deleteBtnUb">Delete</button>
+                    <button id="prevPageUb">←</button>
+                    <span id="pageInfoUb">1</span>
+                    <button id="nextPageUb">→</button>
+                    <button id="updateBtnUb">Update</button>
+                </div>
+
+                <div id="modaleUpdateUb" class="modal hidden">
+                    <div class="modal-content">
+                        <h4>Modifica Ubicazione</h4>
+                        <label id="errorAlreadyExistsUb"></label>
+                        <input type="text" id="modNomeUb" placeholder="Nome">
+                        <button id="btnSalvaUpdateUb">Salva</button>
+                        <button id="btnChiudiUpdateUb">Chiudi</button>
+                    </div>
                 </div>
             </div>
         </div>

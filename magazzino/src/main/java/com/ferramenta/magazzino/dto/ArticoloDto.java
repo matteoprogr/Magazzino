@@ -5,8 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-import java.util.Date;
-
 @Data
 public class ArticoloDto {
 
@@ -33,4 +31,9 @@ public class ArticoloDto {
     private String ubicazione;
 
     private String dataInserimento;
+    private String dataOperazione;
+
+    private int richieste;
+
+    private boolean updatedQuantita;
 }

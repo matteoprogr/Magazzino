@@ -23,5 +23,30 @@ export function creaTabellaCategoria(data){
 
         tBody.appendChild(tr);
     });
+}
 
+export function creaTabellaUbicazione(data){
+    const tBody = document.querySelector('#tabellaUbicazioni tbody');
+    tBody.innerHTML = '';
+
+    if(data.length === 0){
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="2">Nessuna ubicazione presente</td>`;
+        tBody.appendChild(tr);
+        return;
+    }
+
+    data.forEach(ub => {
+        const tr = document.createElement('tr');
+        tr.setAttribute('id', ub.id);
+        tr.innerHTML = `
+            <td>${ub.nome}</td>
+        `;
+
+       tr.addEventListener('click', () => {
+            tr.classList.toggle("selected");
+        });
+
+        tBody.appendChild(tr);
+    });
 }
