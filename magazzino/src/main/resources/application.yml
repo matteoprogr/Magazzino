@@ -1,6 +1,6 @@
 app:
   database:
-    path: ${user.dir}/data/magazzino.db
+    path: ${user.home}/magazzino.db
 
 spring:
   datasource:
