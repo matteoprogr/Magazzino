@@ -45,12 +45,7 @@ export function creaTabellaArticoli(data){
     });
 }
 
-
-export async function createOptionMerce(merce){
-
-    const entrata = [];
-    const uscita = [];
-
+function setData(merce, entrata, uscita){
     merce.forEach( item => {
     const mese = item.mese;
     let index;
@@ -62,6 +57,23 @@ export async function createOptionMerce(merce){
     entrata[index] = item.entrata;
     uscita[index] = item.uscita;
     });
+}
+
+
+export async function createOptionMerce(merce, merce2){
+
+    const entrata = [];
+    const uscita = [];
+    const entrata2 = [];
+    const uscita2 = [];
+    const leg = ['Entrata', 'Uscita'];
+    if(merce2 !== undefined && merce2 !== null && merce2.length > 0){
+        leg[2] = "Entrata2";
+        leg[3] = "Uscita2";
+        setData(merce2, entrata2, uscita2);
+    }
+
+    setData(merce, entrata, uscita);
 
     const option = {
       title: {
@@ -71,7 +83,7 @@ export async function createOptionMerce(merce){
         trigger: 'axis'
       },
       legend: {
-        data: ['Entrata', 'Uscita']
+        data: leg
       },
       grid: {
         left: '3%',
@@ -103,6 +115,16 @@ export async function createOptionMerce(merce){
           name: 'Uscita',
           type: 'line',
           data: uscita
+        },
+        {
+          name: 'Entrata2',
+          type: 'line',
+          data: entrata2
+        },
+        {
+          name: 'Uscita2',
+          type: 'line',
+          data: uscita2
         }
       ]
     };
@@ -110,10 +132,8 @@ export async function createOptionMerce(merce){
     return option;
 }
 
-export async function createOptionCosto(articoli){
 
-    const valore = [];
-
+function setDataCosto(articoli, valore){
     articoli.forEach( item => {
     const data = item.dataInserimento.split('-');
     const mese = data[1];
@@ -124,9 +144,21 @@ export async function createOptionCosto(articoli){
         index = parseInt(mese) - 1;
     }
     const val = valore[index] !== undefined ? valore[index]: 0;
-
     valore[index] = item.costo + val;
     });
+}
+
+export async function createOptionCosto(articoli, articoli2){
+
+    const valore = [];
+    const valore2 = [];
+    const leg = ["Valore"];
+
+    setDataCosto(articoli, valore);
+    if(articoli2 !== undefined && articoli2 !== null && articoli2.length > 0){
+        setDataCosto(articoli2, valore2);
+        leg[1] = "Valore2";
+    }
 
     const option = {
       title: {
@@ -136,7 +168,7 @@ export async function createOptionCosto(articoli){
         trigger: 'axis'
       },
       legend: {
-        data: ['Entrata', 'Uscita']
+        data: leg
       },
       grid: {
         left: '3%',
@@ -163,6 +195,11 @@ export async function createOptionCosto(articoli){
           name: 'Valore',
           type: 'line',
           data: valore
+        },
+        {
+          name: 'Valore2',
+          type: 'line',
+          data: valore2
         }
       ]
     };

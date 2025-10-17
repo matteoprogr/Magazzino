@@ -122,15 +122,15 @@ public class MagazzinoController {
     }
 
     @PostMapping("/aggiungiCategoria")
-    public ResponseDto aggiungiCategoria(@Valid @RequestBody UbicazioneDto ubicazione){
+    public ResponseDto aggiungiCategoria(@Valid @RequestBody CategoriaDto dto){
 
         try{
-            magazzinoService.addCategoria(ubicazione.getNome());
+            magazzinoService.addCategoria(dto.getNome());
         }catch (Exception e){
-            return new ResponseDto("Errore durante l'aggiunta dell'ubicazione", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseDto("Errore durante l'aggiunta della categoria", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return new ResponseDto("Ubicazione aggiunto con successo", HttpStatus.OK);
+        return new ResponseDto("Categoria aggiunto con successo", HttpStatus.OK);
     }
 
     @PutMapping("/updateUbicazione")
@@ -193,7 +193,17 @@ public class MagazzinoController {
         }catch (Exception e){
             throw new RuntimeException(e);
         }
+    }
 
+    @PutMapping("/updateMerce")
+    public ResponseDto updateMerce (@Valid @RequestBody MerceDto merceDto){
+        try{
+            magazzinoService.updateMerceDirettamente(merceDto);
+        }catch (Exception e){
+            return new ResponseDto("Errore durante l'update della merce", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseDto("Merce modificata con successo", HttpStatus.OK);
     }
 
 }

@@ -1,8 +1,7 @@
 import { creaTabellaArticoli, createOptionMerce, createOptionCosto } from './gestioneMagazzino.js'
-import { creaTabellaCategoria, creaTabellaUbicazione } from './categorie.js'
+import { creaTabellaCategoria, creaTabellaUbicazione, creaTabellaMerce } from './categorie.js'
 
 const API_BASE_URL = "/api/magazzino";
-
 
 document.addEventListener("DOMContentLoaded", async () => {
     getCategorie("selectCategoria", "addCategoria");
@@ -34,7 +33,6 @@ document.querySelectorAll('.nav-links a').forEach(link => {
         setDate();
         const filtri = await creaFiltri();
         paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione, filtri.da, filtri.a, filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,currentPage -1, pageSize, filtri.sortField));
-
     }
     if(target === "gestione"){
         getCategorie("selectCategoriaSearch","categoriaSearch");
@@ -45,11 +43,21 @@ document.querySelectorAll('.nav-links a').forEach(link => {
         paginazioneUb(await ricercaUbicazioni(filtriUb.nome, currentPageUb -1, pageSizeUb));
         const anno = await getYear();
         document.getElementById('pageInfoGr').innerText = anno;
+        document.getElementById('compara').value = null;
         creaGrafico(anno);
         creaGraficoMerce(anno);
+        creaTabellaMerce(await ricercaMerce(anno));
     }
   });
 });
+
+document.getElementById("compara").addEventListener('input', setComparazione)
+async function setComparazione(){
+    const annoComparato = document.getElementById("compara").value;
+    const anno = parseInt(document.getElementById('pageInfoGr').innerText);
+    creaGrafico(anno, annoComparato);
+    creaGraficoMerce(anno, annoComparato);
+}
 
 async function getCategorie(elementId, inputCat){
     const select = document.getElementById(elementId);
@@ -585,6 +593,28 @@ async function updateUbicazione(oldUbicazione, newName){
     }
 }
 
+async function updateMerce(dto){
+    try{
+       const response = await fetch(`${API_BASE_URL}/updateMerce`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(dto)
+       });
+
+       const data = await response.json();
+       if(!response.ok){
+        throw new Error(data.messaggio || 'Errore nella richiesta')
+       }
+       console.log(data.messaggio);
+       const merce = await ricercaMerce(dto.anno);
+       creaTabellaMerce(merce);
+       creaGraficoMerce(dto.anno);
+       return data;
+    }catch(err){
+        console.error(err);
+    }
+}
+
 ////////// PAGINAZIONE ARTICOLI //////////////
 let currentPage = 1;
 const pageSize = 25;
@@ -687,6 +717,7 @@ prevBtnGr.addEventListener("click", async () => {
     pageInfoGr.innerText = `${currentPageGr}`;
     creaGrafico(currentPageGr);
     creaGraficoMerce(currentPageGr);
+    creaTabellaMerce(await ricercaMerce(currentPageGr));
 });
 
 nextBtnGr.addEventListener("click", async () => {
@@ -694,6 +725,7 @@ nextBtnGr.addEventListener("click", async () => {
     pageInfoGr.innerText = `${currentPageGr}`;
     creaGrafico(currentPageGr);
     creaGraficoMerce(currentPageGr);
+    creaTabellaMerce(await ricercaMerce(currentPageGr));
 });
 
 ////////  GET SELECTED ///////////
@@ -843,6 +875,7 @@ async function updateCategoriaChecked(){
     return;
     }
 
+    document.getElementById("errorAlreadyExists").innerText = "";
     const celle = rigaSelected[0].querySelectorAll('td');
     const nome = celle[0].innerText;
 
@@ -886,6 +919,7 @@ async function updateUbicazioneChecked(){
     return;
     }
 
+    document.getElementById("errorAlreadyExistsUb").innerText = "";
     const celle = rigaSelected[0].querySelectorAll('td');
     const nome = celle[0].innerText;
 
@@ -913,6 +947,64 @@ async function updateUbicazioneChecked(){
         }
     });
 }
+const mesi = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+document.getElementById("updateBtnMe").addEventListener('click', updateMerceChecked);
+async function updateMerceChecked(){
+    const table = document.querySelector('#tabellaMerce tbody');
+        const rigaSelected = table.querySelectorAll('tr.selected');
+
+        if (rigaSelected.length === 0) {
+        showToast("Seleziona una riga", "warning");
+        return;
+        }
+
+        if (rigaSelected.length > 1) {
+        showToast("Seleziona solo una riga", "warning");
+        return;
+        }
+
+        const celle = rigaSelected[0].querySelectorAll('td');
+        const anno = rigaSelected[0].getAttribute("anno");
+        const mese = celle[0].innerText;
+        const entrata = celle[1].innerText;
+        const uscita = celle[2].innerText;
+
+        document.querySelector('#modEntrataMe').value = entrata;
+        document.querySelector('#modUscitaMe').value = uscita;
+        document.querySelector('#titoloMod').textContent = "Modifica Movimenti " + mese;
+        document.querySelector('#modaleUpdateMe').classList.remove('hidden');
+        document.querySelector('#modaleUpdateMe').dataset.anno = anno;
+        document.querySelector('#modaleUpdateMe').dataset.mese = mese;
+
+        document.querySelector('#btnChiudiUpdateMe').addEventListener('click', () => {
+            document.querySelector('#modaleUpdateMe').classList.add('hidden');
+        });
+
+            document.querySelector('#btnSalvaUpdateMe').addEventListener('click', async () =>{
+                try{
+                    const mese = document.querySelector('#modaleUpdateMe').dataset.mese;
+                    const meseIndex = (mesi.indexOf(mese) +1) + "";
+                    const meseFormatted = meseIndex.padStart(2,'0');
+                    const dto = {
+                        entrata: document.querySelector('#modEntrataMe').value,
+                        uscita: document.querySelector('#modUscitaMe').value,
+                        anno: document.querySelector('#modaleUpdateMe').dataset.anno,
+                        mese: meseFormatted
+                    }
+
+                    const response = await updateMerce(dto);
+
+                    if(response.status != "BAD_REQUEST"){
+                        document.querySelector('#modaleUpdateMe').classList.add('hidden');
+                    }else{
+                        showToast("Errore durarante l'update");
+                    }
+
+                }catch(err){
+                    console.error(err);
+                }
+            });
+}
 
 export function showToast(message,type, time = 3000) {
   const toast = document.createElement("div");
@@ -927,18 +1019,26 @@ export function showToast(message,type, time = 3000) {
   }, time);
 }
 
-async function creaGrafico(anno){
+async function creaGrafico(anno, anno2){
     const echarts = window.echarts;
     const chart = echarts.init(document.getElementById("chart"));
     const data = await ricercaArticoliGraph(anno + "-01-01", anno + "-12-31", 0, 0);
-    const graph = await createOptionCosto(data);
+    let data2;
+    anno2 = document.getElementById("compara").value;
+    if(anno2 !== undefined && anno2 !== null && anno !== parseInt(anno2)){
+        data2 = await ricercaArticoliGraph(anno2 + "-01-01", anno2 + "-12-31", 0, 0);
+    }
+    const graph = await createOptionCosto(data, data2);
     chart.setOption(graph);
 }
 
-async function creaGraficoMerce(anno){
+async function creaGraficoMerce(anno, anno2){
     const echarts = window.echarts;
     const chartMerce = echarts.init(document.getElementById("chartMerce"));
     const data = await ricercaMerce(anno);
-    const graph = await createOptionMerce(data);
+    let data2;
+    anno2 = document.getElementById("compara").value;
+    if(anno2 !== undefined && anno2 !== null && anno !== parseInt(anno2)) data2 = await ricercaMerce(anno2);
+    const graph = await createOptionMerce(data, data2);
     chartMerce.setOption(graph);
 }

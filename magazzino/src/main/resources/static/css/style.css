@@ -164,6 +164,9 @@ th {
 #updateBtnUb{
     background: orange;
 }
+#updateBtnMe{
+    background: orange;
+}
 
 .selected{
      background-color: #cce5ff;
@@ -212,7 +215,7 @@ th {
 .tabellaCat-container {
     flex: 1;
     min-width: 0;
-    max-width: 30%;
+    max-width: 20%;
     max-height: 90vh;
     min-height: 90vh;
     overflow-y: auto;
@@ -262,6 +265,12 @@ th {
   gap: 15px;
   width: 100%;
 }
+
+.row.label {
+  justify-content: center;
+  width: 100%;
+}
+
 
 .column {
   display: flex;
@@ -316,6 +325,9 @@ th {
   justify-content: center;
   align-items: center;
   width: 100%;
+}
+.marginGraph{
+    margin-bottom: 1rem;
 }
 
 #chart {

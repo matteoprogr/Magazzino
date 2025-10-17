@@ -3,6 +3,7 @@ package com.ferramenta.magazzino.service;
 import com.ferramenta.magazzino.advice.AlreadyExistsException;
 import com.ferramenta.magazzino.dto.ArticoloDto;
 import com.ferramenta.magazzino.dto.EntityResponseDto;
+import com.ferramenta.magazzino.dto.MerceDto;
 import com.ferramenta.magazzino.entity.Articolo;
 import com.ferramenta.magazzino.entity.Categoria;
 import com.ferramenta.magazzino.entity.Merce;
@@ -162,6 +163,13 @@ public class MagazzinoService {
         }
     }
 
+    public void updateMerceDirettamente(MerceDto dto){
+        Merce merce = merceRepository.findByMeseAndAnno(dto.getMese(), dto.getAnno());
+        merce.setUscita(dto.getUscita());
+        merce.setEntrata(dto.getEntrata());
+        merceRepository.save(merce);
+    }
+
     private String creaCodiceByNomeAndCategoriaAndUbicazione(String nome, String categoria, String ubicazione, Integer id){
         String cat = Normalizer.normalize(categoria, Normalizer.Form.NFD).substring(0,3).replaceAll("\\p{M}","");
         String ubi = Normalizer.normalize(ubicazione, Normalizer.Form.NFD).substring(0,3).replaceAll("\\p{M}","");
@@ -226,6 +234,9 @@ public class MagazzinoService {
         if(categoriaRepository.findByNome(newNameCap) != null){
             throw new AlreadyExistsException("Categoria già presente");
         }
+        if(newName != null && (newName.length() > 30 || newName.length() < 3)){
+            throw new AlreadyExistsException("Inserire almeno 3 caratteri e massimo 30");
+        }
         Categoria categoria = categoriaRepository.findByNome(oldCap);
         categoria.setNome(newNameCap);
         categoriaRepository.save(categoria);
@@ -268,6 +279,9 @@ public class MagazzinoService {
         String oldCap = capitalize(oldUbicazione);
         if(ubicazioneRepository.findByNome(newNameCap) != null){
             throw new AlreadyExistsException("Ubicazione già presente");
+        }
+        if(newName != null && (newName.length() > 30 || newName.length() < 3)){
+            throw new AlreadyExistsException("Inserire almeno 3 caratteri e massimo 30");
         }
         Ubicazione ubicazione = ubicazioneRepository.findByNome(oldCap);
         ubicazione.setNome(newNameCap);

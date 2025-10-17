@@ -202,9 +202,11 @@
                     <div class="modal-content">
                         <h4>Modifica Categoria</h4>
                         <label id="errorAlreadyExists"></label>
-                        <input type="text" id="modNomeCat" placeholder="Nome" >
-                        <button id="btnSalvaUpdateCat">Salva</button>
-                        <button id="btnChiudiUpdateCat">Chiudi</button>
+                        <input type="text" id="modNomeCat" placeholder="Nome">
+                        <div class="row buttons">
+                            <button id="btnSalvaUpdateCat">Salva</button>
+                            <button id="btnChiudiUpdateCat">Chiudi</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -232,20 +234,60 @@
                         <h4>Modifica Ubicazione</h4>
                         <label id="errorAlreadyExistsUb"></label>
                         <input type="text" id="modNomeUb" placeholder="Nome">
-                        <button id="btnSalvaUpdateUb">Salva</button>
-                        <button id="btnChiudiUpdateUb">Chiudi</button>
+                        <div class="row buttons">
+                            <button id="btnSalvaUpdateUb">Salva</button>
+                            <button id="btnChiudiUpdateUb">Chiudi</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-me">
+                <table id="tabellaMerce">
+                    <thead>
+                    <tr>
+                        <th>Mese</th>
+                        <th>Entrata</th>
+                        <th>Uscita</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div id="paginationMe" class="pagination-container">
+                    <button id="updateBtnMe">Update</button>
+                </div>
+
+                <div id="modaleUpdateMe" class="modal hidden">
+                    <div class="modal-content">
+                        <div class="row label">
+                            <h4 id="titoloMod"></h4>
+                        </div>
+                        <div class="row">
+                            <div class="column">
+                                <label for="modEntrataMe" class="labelMod">Entrata</label>
+                                <input type="number" id="modEntrataMe" placeholder="Entrata" min="0" max="1000000000">
+                            </div>
+                            <div class="column">
+                                <label for="modUscitaMe" class="labelMod">Uscita</label>
+                                <input type="number" id="modUscitaMe" placeholder="Uscita" min="0" max="1000000000">
+                            </div>
+                        </div>
+                        <div class="row buttons">
+                            <button id="btnSalvaUpdateMe">Salva</button>
+                            <button id="btnChiudiUpdateMe">Chiudi</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="graphScroll">
-            <div class="chart-wrapper">
+            <div class="chart-wrapper marginGraph">
                 <div id="chart"></div>
             </div>
             <div class="chart-wrapper">
                 <div id="chartMerce"></div>
             </div>
             <div id="paginationGr" class="pagination-container">
+                <input type="number" id="compara" placeholder="Compara" min="2020" max="3000">
                 <button id="prevPageGr">←</button>
                 <span id="pageInfoGr"></span>
                 <button id="nextPageGr">→</button>
