@@ -124,7 +124,7 @@ public class MagazzinoService {
         String anno;
         String dataOperazione = dto.getDataOperazione();
         if(dataOperazione != null){
-            String [] data = dto.getDataInserimento().split("-");
+            String [] data = dataOperazione.split("-");
             mese = data[1];
             anno = data[0];
         }else{
@@ -292,5 +292,10 @@ public class MagazzinoService {
         long count = ubicazioneRepository.countUbicazione(ubicazione);
 
         return new EntityResponseDto(ubicazioni, count);
+    }
+
+    public EntityResponseDto ricercaMerce(String anno){
+        List<Merce> list = merceRepository.findByAnno(anno);
+        return new EntityResponseDto(list, 0);
     }
 }

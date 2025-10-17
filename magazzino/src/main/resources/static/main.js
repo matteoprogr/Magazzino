@@ -1,4 +1,4 @@
-import { creaTabellaArticoli, createOption, attachLegendHandler } from './gestioneMagazzino.js'
+import { creaTabellaArticoli, createOptionMerce, createOptionCosto } from './gestioneMagazzino.js'
 import { creaTabellaCategoria, creaTabellaUbicazione } from './categorie.js'
 
 const API_BASE_URL = "/api/magazzino";
@@ -13,7 +13,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     setDateSearch();
     const filtri = await creaFiltri();
     paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione, filtri.da, filtri.a, filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,currentPage -1, pageSize, filtri.sortField));
-
 });
 
 
@@ -44,7 +43,10 @@ document.querySelectorAll('.nav-links a').forEach(link => {
         paginazioneCat(await ricercaCategorie(filtri.nome, currentPageCat -1, pageSizeCat));
         const filtriUb = await creaFiltriUb();
         paginazioneUb(await ricercaUbicazioni(filtriUb.nome, currentPageUb -1, pageSizeUb));
-        creaGrafico();
+        const anno = await getYear();
+        document.getElementById('pageInfoGr').innerText = anno;
+        creaGrafico(anno);
+        creaGraficoMerce(anno);
     }
   });
 });
@@ -85,6 +87,11 @@ lastMonth.setMonth(lastMonth.getMonth() - 1);
 const formattedLast = lastMonth.toISOString().split('T')[0];
 data_da.value = formattedLast;
 data_a.value = formatted;
+}
+
+async function getYear(){
+    const today = new Date();
+    return today.getFullYear();
 }
 
 async function getUbicazione(elementId, inputUb){
@@ -331,13 +338,16 @@ export async function ricercaArticoli(nome, codice, categoria, ubicazione, da, a
         labelRisultati.textContent = `Totale risultati: ${risultati}`;
         return risultati;
     }catch(err){
-        console.error(err)
+        console.error(err);
+        showToast("Errore durante l'esecuzione della ricerca");
     }
 }
 
-export async function ricercaArticoliGraph(page = 0, size = 0){
+export async function ricercaArticoliGraph(da, a, page = 0, size = 0){
     try{
         const params = new URLSearchParams();
+        if(da) params.append("da", da);
+        if(a) params.append("a", a);
         params.append("page", page);
         params.append("size", size);
 
@@ -346,6 +356,7 @@ export async function ricercaArticoliGraph(page = 0, size = 0){
         return json.entity;
     }catch(err){
         console.error(err)
+        showToast("Errore durante l'esecuzione della ricerca");
     }
 }
 
@@ -366,7 +377,8 @@ export async function ricercaCategorie(categoria, page = 0, size = 10){
         labelCat.textContent = `Totale risultati: ${risultati}`;
         return risultati;
     }catch(err){
-        console.error(err)
+        console.error(err);
+        showToast("Errore durante l'esecuzione della ricerca");
     }
 }
 
@@ -382,6 +394,21 @@ export async function ricercaCategorieSelect(categoria, page = 0, size = 0){
         return json.entity;
     }catch(err){
         console.error(err)
+        showToast("Errore durante l'esecuzione della ricerca");
+    }
+}
+
+async function ricercaMerce(anno){
+    try{
+        const params = new URLSearchParams();
+        if(anno) params.append("anno", anno);
+
+        const res = await fetch(`${API_BASE_URL}/ricercaMerce?${params}`);
+        const json = await res.json();
+        return json.entity;
+    }catch(err){
+        console.error(err);
+        showToast("Errore durante l'esecuzione della ricerca");
     }
 }
 
@@ -648,6 +675,27 @@ nextBtnUb.addEventListener("click", async () => {
     paginazioneUb(await ricercaUbicazioni(filtri.nome, currentPageUb -1, pageSizeUb));
 });
 
+////// PAGINAZIONE GRAFICI ///////////
+let currentPageGr = parseInt(await getYear());
+
+const prevBtnGr = document.getElementById("prevPageGr");
+const nextBtnGr = document.getElementById("nextPageGr");
+const pageInfoGr = document.getElementById("pageInfoGr");
+
+prevBtnGr.addEventListener("click", async () => {
+    currentPageGr--;
+    pageInfoGr.innerText = `${currentPageGr}`;
+    creaGrafico(currentPageGr);
+    creaGraficoMerce(currentPageGr);
+});
+
+nextBtnGr.addEventListener("click", async () => {
+    currentPageGr++;
+    pageInfoGr.innerText = `${currentPageGr}`;
+    creaGrafico(currentPageGr);
+    creaGraficoMerce(currentPageGr);
+});
+
 ////////  GET SELECTED ///////////
 document.getElementById("deleteBtn").addEventListener('click', deleteArticoliChecked);
 export async function deleteArticoliChecked(){
@@ -879,11 +927,18 @@ export function showToast(message,type, time = 3000) {
   }, time);
 }
 
-async function creaGrafico(){
+async function creaGrafico(anno){
     const echarts = window.echarts;
-    const chartTorta = echarts.init(document.getElementById("chart"));
-    const data = await ricercaArticoliGraph(0, 0);
-    const graph = await createOption(data);
-    chartTorta.setOption(graph);
-    attachLegendHandler(chartTorta);
+    const chart = echarts.init(document.getElementById("chart"));
+    const data = await ricercaArticoliGraph(anno + "-01-01", anno + "-12-31", 0, 0);
+    const graph = await createOptionCosto(data);
+    chart.setOption(graph);
+}
+
+async function creaGraficoMerce(anno){
+    const echarts = window.echarts;
+    const chartMerce = echarts.init(document.getElementById("chartMerce"));
+    const data = await ricercaMerce(anno);
+    const graph = await createOptionMerce(data);
+    chartMerce.setOption(graph);
 }

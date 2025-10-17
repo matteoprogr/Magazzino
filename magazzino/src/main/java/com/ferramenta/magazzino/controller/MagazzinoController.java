@@ -182,8 +182,18 @@ public class MagazzinoController {
         }catch (Exception e){
             return new ResponseDto("Errore durante l'aggiunta della categoria", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
         return new ResponseDto("Ubicazione aggiunta con successo", HttpStatus.OK);
+    }
+
+    @GetMapping("/ricercaMerce")
+    public EntityResponseDto ricercaMerce (
+            @RequestParam(required = true) String anno){
+        try{
+            return  magazzinoService.ricercaMerce(anno);
+        }catch (Exception e){
+            throw new RuntimeException(e);
+        }
+
     }
 
 }

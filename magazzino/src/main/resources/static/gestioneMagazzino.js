@@ -46,105 +46,26 @@ export function creaTabellaArticoli(data){
 }
 
 
-export async function createOption(articoli){
-    const aggregato = {};
+export async function createOptionMerce(merce){
 
-      articoli.forEach(item => {
-        const categoria = item.categoria;
-        const quantita = Number(item.quantita) || 0;
-        if (!aggregato[categoria]) {
-          aggregato[categoria] = 0;
-        }
-        aggregato[categoria] += Math.abs(quantita);
-      });
+    const entrata = [0,0,0,0,0,0,0,0,0,0,0,0];
+    const uscita = [0,0,0,0,0,0,0,0,0,0,0,0];
 
-      const data = Object.entries(aggregato).map(([name, value]) => ({ name, value }));
-      let totale = data.reduce((acc, item) => acc + item.value, 0);
-
-        const option = {
-          tooltip: {
-            trigger: 'item',
-            formatter: function (params) {
-                  return `${params.name}<br>
-                          Quantità: ${Number(params.value).toFixed(2)} <br>
-                          % sul totale: ${(Number(params.value)/ totale * 100).toFixed(2)} `;
-                }
-          },
-          legend: {
-            type: 'scroll',
-            orient: 'vertical',
-            top: '10%',
-            left: 'left',
-            height: '80%',
-            pageFormatter: '',
-            pageIconSize: 16,
-            pageIconColor: '#555',
-            pageIconInactiveColor: '#ddd',
-            pageTextStyle: { color: 'transparent' }
-          },
-          series: [
-            {
-              type: 'pie',
-              radius: ['40%', '70%'],
-              center: ['65%', '45%'],
-              avoidLabelOverlap: false,
-              itemStyle: {
-                borderRadius: 10,
-                borderColor: '#fff',
-                borderWidth: 2
-              },
-              label: {
-                show: true,
-                position: 'center',
-                formatter: () => `${totale.toFixed(2)}`,
-                fontSize: 18,
-                fontWeight: 'bold',
-                lineHeight: 22
-              },
-              labelLine: {
-                show: false
-              },
-              data: data
-            }
-          ]
-        };
-
-        return option;
-}
-
-export function attachLegendHandler(chart) {
-    chart.on('legendselectchanged', function (params) {
-        const option = chart.getOption();
-        const selected = params.selected;
-        const data = option.series[0].data;
-        const newTotal = data.reduce((acc, item) => { return selected[item.name] ? acc + item.value : acc; }, 0);
-
-        chart.setOption({
-        series: [{
-          label: {
-           formatter: () => `${newTotal.toFixed(2)}`
-          }
-         }]
-        });
-
-        chart.setOption ({
-         tooltip: {
-          ...option.tooltip[0],
-          formatter: function(p){
-           return `${p.name}: ${Number(p.value).toFixed(2)} <br>
-                   % sul totale: ${(p.value /newTotal * 100).toFixed(2)}`;
-          }
-         }
-        }, false, true);
+    merce.forEach( item => {
+    const mese = item.mese;
+    let index;
+    if(mese[0] === '0'){
+        index = parseInt(mese[1]) - 1;
+    }else{
+        index = parseInt(mese) - 1;
+    }
+    entrata[index] = item.entrata;
+    uscita[index] = item.uscita;
     });
-}
 
-export async function createOptionMerce(articoli){
-
-
-    option = {
+    const option = {
       title: {
-        text: 'Stacked Line'
+        text: 'Movimenti'
       },
       tooltip: {
         trigger: 'axis'
@@ -176,14 +97,74 @@ export async function createOptionMerce(articoli){
         {
           name: 'Entrata',
           type: 'line',
-          data: [120, 132, 101, 134, 90, 230, 210]
+          data: entrata
         },
         {
           name: 'Uscita',
           type: 'line',
-          data: [220, 182, 191, 234, 290, 330, 310]
+          data: uscita
         }
       ]
     };
 
+    return option;
 }
+
+export async function createOptionCosto(articoli){
+
+    const valore = [0,0,0,0,0,0,0,0,0,0,0,0];
+
+    articoli.forEach( item => {
+    const data = item.dataInserimento.split('-');
+    const mese = data[1];
+    let index;
+    if(mese[0] === '0'){
+        index = parseInt(mese[1], 10) - 1;
+    }else{
+        index = parseInt(mese) - 1;
+    }
+    valore[index] += item.costo;
+    });
+
+    const option = {
+      title: {
+        text: 'Valore Magazzino'
+      },
+      tooltip: {
+        trigger: 'axis'
+      },
+      legend: {
+        data: ['Entrata', 'Uscita']
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+      },
+      toolbox: {
+        feature: {
+          saveAsImage: {}
+        }
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
+               'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre']
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
+          name: 'Valore',
+          type: 'line',
+          data: valore
+        }
+      ]
+    };
+
+    return option;
+}
+
