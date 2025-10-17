@@ -48,8 +48,8 @@ export function creaTabellaArticoli(data){
 
 export async function createOptionMerce(merce){
 
-    const entrata = [0,0,0,0,0,0,0,0,0,0,0,0];
-    const uscita = [0,0,0,0,0,0,0,0,0,0,0,0];
+    const entrata = [];
+    const uscita = [];
 
     merce.forEach( item => {
     const mese = item.mese;
@@ -112,7 +112,7 @@ export async function createOptionMerce(merce){
 
 export async function createOptionCosto(articoli){
 
-    const valore = [0,0,0,0,0,0,0,0,0,0,0,0];
+    const valore = [];
 
     articoli.forEach( item => {
     const data = item.dataInserimento.split('-');
@@ -123,7 +123,9 @@ export async function createOptionCosto(articoli){
     }else{
         index = parseInt(mese) - 1;
     }
-    valore[index] += item.costo;
+    const val = valore[index] !== undefined ? valore[index]: 0;
+
+    valore[index] = item.costo + val;
     });
 
     const option = {
