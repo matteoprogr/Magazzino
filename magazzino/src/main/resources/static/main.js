@@ -592,27 +592,6 @@ async function updateUbicazione(oldUbicazione, newName){
     }
 }
 
-async function updateMerce(dto){
-    try{
-       const response = await fetch(`${API_BASE_URL}/updateMerce`, {
-        method: 'PUT',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(dto)
-       });
-
-       const data = await response.json();
-       if(!response.ok){
-        throw new Error(data.messaggio || 'Errore nella richiesta')
-       }
-       console.log(data.messaggio);
-       const merce = await ricercaMerce(dto.anno);
-       creaTabellaMerce(merce);
-       creaGraficoMerce(dto.anno);
-       return data;
-    }catch(err){
-        console.error(err);
-    }
-}
 
 ////////// PAGINAZIONE ARTICOLI //////////////
 let currentPage = 1;
@@ -843,7 +822,7 @@ async function checkDate(){
     const dataInserimento = document.querySelector('#modData').value;
     const dataModifica = document.querySelector('#modDataModifica').value;
     if(dataModifica < dataInserimento){
-        document.getElementById("error").textContent = "La dataModifica non può essere inferiore alla data inserimento";
+        document.getElementById("error").textContent = "La data modifica non può essere inferiore alla data inserimento";
         btnSave.disabled = true;
         btnSave.classList.add('modOpacity');
     }else{
@@ -984,64 +963,7 @@ async function updateUbicazioneChecked(){
         }
     });
 }
-const mesi = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
-document.getElementById("updateBtnMe").addEventListener('click', updateMerceChecked);
-async function updateMerceChecked(){
-    const table = document.querySelector('#tabellaMerce tbody');
-        const rigaSelected = table.querySelectorAll('tr.selected');
 
-        if (rigaSelected.length === 0) {
-        showToast("Seleziona una riga", "warning");
-        return;
-        }
-
-        if (rigaSelected.length > 1) {
-        showToast("Seleziona solo una riga", "warning");
-        return;
-        }
-
-        const celle = rigaSelected[0].querySelectorAll('td');
-        const anno = rigaSelected[0].getAttribute("anno");
-        const mese = celle[0].innerText;
-        const entrata = celle[1].innerText;
-        const uscita = celle[2].innerText;
-
-        document.querySelector('#modEntrataMe').value = entrata;
-        document.querySelector('#modUscitaMe').value = uscita;
-        document.querySelector('#titoloMod').textContent = "Modifica Movimenti " + mese;
-        document.querySelector('#modaleUpdateMe').classList.remove('hidden');
-        document.querySelector('#modaleUpdateMe').dataset.anno = anno;
-        document.querySelector('#modaleUpdateMe').dataset.mese = mese;
-
-        document.querySelector('#btnChiudiUpdateMe').addEventListener('click', () => {
-            document.querySelector('#modaleUpdateMe').classList.add('hidden');
-        });
-
-            document.querySelector('#btnSalvaUpdateMe').addEventListener('click', async () =>{
-                try{
-                    const mese = document.querySelector('#modaleUpdateMe').dataset.mese;
-                    const meseIndex = (mesi.indexOf(mese) +1) + "";
-                    const meseFormatted = meseIndex.padStart(2,'0');
-                    const dto = {
-                        entrata: document.querySelector('#modEntrataMe').value,
-                        uscita: document.querySelector('#modUscitaMe').value,
-                        anno: document.querySelector('#modaleUpdateMe').dataset.anno,
-                        mese: meseFormatted
-                    }
-
-                    const response = await updateMerce(dto);
-
-                    if(response.status != "BAD_REQUEST"){
-                        document.querySelector('#modaleUpdateMe').classList.add('hidden');
-                    }else{
-                        showToast("Errore durarante l'update");
-                    }
-
-                }catch(err){
-                    console.error(err);
-                }
-            });
-}
 
 export function showToast(message,type, time = 3000) {
   const toast = document.createElement("div");
@@ -1062,7 +984,7 @@ async function creaGrafico(anno, anno2){
     const data = await ricercaArticoliGraph(anno);
     let data2;
     anno2 = document.getElementById("compara").value;
-    if(anno2 !== undefined && anno2 !== null && anno !== parseInt(anno2)){
+    if(isValid(anno2) && anno !== parseInt(anno2)){
         data2 = await ricercaArticoliGraph(anno2);
     }
     const graph = await createOptionCosto(data, data2);
@@ -1075,7 +997,13 @@ async function creaGraficoMerce(anno, anno2){
     const data = await ricercaMerce(anno);
     let data2;
     anno2 = document.getElementById("compara").value;
-    if(anno2 !== undefined && anno2 !== null && anno !== parseInt(anno2)) data2 = await ricercaMerce(anno2);
+    if(isValid(anno2) && anno !== parseInt(anno2)) data2 = await ricercaMerce(anno2);
     const graph = await createOptionMerce(data, data2);
     chartMerce.setOption(graph);
 }
+
+export function isValid(value) {
+    return value != null && !Number.isNaN(value) && value !== "" && value != undefined;
+}
+
+

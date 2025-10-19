@@ -206,15 +206,4 @@ public class MagazzinoController {
         }
     }
 
-    @PutMapping("/updateMerce")
-    public ResponseDto updateMerce (@Valid @RequestBody MerceDto merceDto){
-        try{
-            magazzinoService.updateMerceDirettamente(merceDto);
-        }catch (Exception e){
-            return new ResponseDto("Errore durante l'update della merce", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return new ResponseDto("Merce modificata con successo", HttpStatus.OK);
-    }
-
 }

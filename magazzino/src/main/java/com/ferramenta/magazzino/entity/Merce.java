@@ -17,4 +17,5 @@ public class Merce {
     private int uscita;
     private String mese;
     private String anno;
+    private String idArticolo;
 }

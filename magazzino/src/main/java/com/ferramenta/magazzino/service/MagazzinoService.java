@@ -3,7 +3,6 @@ package com.ferramenta.magazzino.service;
 import com.ferramenta.magazzino.advice.AlreadyExistsException;
 import com.ferramenta.magazzino.dto.ArticoloDto;
 import com.ferramenta.magazzino.dto.EntityResponseDto;
-import com.ferramenta.magazzino.dto.MerceDto;
 import com.ferramenta.magazzino.entity.*;
 import com.ferramenta.magazzino.repository.*;
 import lombok.extern.slf4j.Slf4j;
@@ -12,9 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.Normalizer;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 
 @Service
@@ -37,9 +34,11 @@ public class MagazzinoService {
     public void addArticolo(ArticoloDto dto){
         dto.setCategoria(addCategoria(dto.getCategoria()));
         dto.setUbicazione(addUbicazione(dto.getUbicazione()));
+        String idArticolo = UUID.randomUUID().toString();
+        dto.setIdArticolo(idArticolo);
         dto.setCodice(creaCodiceByNomeAndCategoriaAndUbicazione(dto.getNome(), dto.getCategoria(), dto.getUbicazione(), null));
         Articolo articolo = dtoToArticoloWithoutId(dto);
-        articolo.setIdArticolo(UUID.randomUUID().toString());
+        articolo.setIdArticolo(idArticolo);
         articoliRepository.save(articolo);
     }
 
@@ -72,19 +71,16 @@ public class MagazzinoService {
     }
 
     public void deleteArticolo(List<Integer> ids){
-        // TODO aggiungere idArticolo a entity merce cosi da poter associare i movimenti
-        //  in entrata e in uscita a un record specifico
         try{
             for(int id : ids){
-                Articolo articolo = new Articolo();
-                articolo.setId(id);
+                Articolo articolo = articoliRepository.findById(id);
                 articoliRepository.delete(articolo);
+                merceRepository.deleteByIdArticolo(articolo.getIdArticolo());
             }
         }catch (Exception e){
             log.error(e.getMessage());
             throw new RuntimeException(e);
         }
-
     }
 
     public EntityResponseDto ricercaArticoli(String nome, String categoria, String ubicazione, String codice, String da, String a, Integer min, Integer max, Integer minCosto, Integer maxCosto, int limit, int offset, String sortField){
@@ -140,8 +136,9 @@ public class MagazzinoService {
 
     private void saveMerce(ArticoloDto dto){
         String [] data = dto.getDataInserimento().split("-");
+        String idArticolo = dto.getIdArticolo();
         Merce merce = new Merce();
-        Merce merceEsistente = merceRepository.findByMeseAndAnno(data[1],data[0]);
+        Merce merceEsistente = merceRepository.findByMeseAndAnnoAndIdArticolo(data[1],data[0],idArticolo);
         int entrata;
         if(merceEsistente != null){
             entrata = merceEsistente.getEntrata();
@@ -153,6 +150,7 @@ public class MagazzinoService {
             merce.setEntrata(entrata);
             merce.setMese(data[1]);
             merce.setAnno(data[0]);
+            merce.setIdArticolo(idArticolo);
             merceRepository.save(merce);
         }
     }
@@ -162,6 +160,7 @@ public class MagazzinoService {
         int diff = articolo.getQuantita() - dto.getQuantita();
         String mese;
         String anno;
+        String idArticolo = dto.getIdArticolo();
         String dataModifica = dto.getDataModifica();
         if(dataModifica != null){
             String [] data = dataModifica.split("-");
@@ -173,7 +172,7 @@ public class MagazzinoService {
             anno = String.valueOf(oggi.getYear());
         }
 
-        Merce merceEsistente = merceRepository.findByMeseAndAnno(mese,anno);
+        Merce merceEsistente = merceRepository.findByMeseAndAnnoAndIdArticolo(mese,anno,idArticolo);
         int entrata;
         int uscita;
         if(merceEsistente != null){
@@ -198,16 +197,11 @@ public class MagazzinoService {
             }
             merce.setMese(mese);
             merce.setAnno(anno);
+            merce.setIdArticolo(idArticolo);
             merceRepository.save(merce);
         }
     }
 
-    public void updateMerceDirettamente(MerceDto dto){
-        Merce merce = merceRepository.findByMeseAndAnno(dto.getMese(), dto.getAnno());
-        merce.setUscita(dto.getUscita());
-        merce.setEntrata(dto.getEntrata());
-        merceRepository.save(merce);
-    }
 
     private String creaCodiceByNomeAndCategoriaAndUbicazione(String nome, String categoria, String ubicazione, Integer id){
         String cat = Normalizer.normalize(categoria, Normalizer.Form.NFD).substring(0,3).replaceAll("\\p{M}","");
@@ -349,6 +343,34 @@ public class MagazzinoService {
 
     public EntityResponseDto ricercaMerce(String anno){
         List<Merce> list = merceRepository.findByAnno(anno);
-        return new EntityResponseDto(list, 0);
+        Map<String, Integer> mapEntrata = new HashMap<>();
+        Map<String, Integer> mapUscita = new HashMap<>();
+        List<Merce> summedList = new ArrayList<>();
+        for(Merce merce : list){
+            int valueEntrata = 0;
+            if(mapEntrata.get(merce.getMese()) != null){
+                valueEntrata = mapEntrata.get(merce.getMese());
+            }
+            int sumEntrata = valueEntrata + merce.getEntrata();
+            mapEntrata.put(merce.getMese(), sumEntrata);
+
+            int valueUscita = 0;
+            if(mapUscita.get(merce.getMese()) != null){
+                valueUscita = mapUscita.get(merce.getMese());
+            }
+            int sumUscita = valueUscita + merce.getUscita();
+            mapUscita.put(merce.getMese(), sumUscita);
+        }
+        for( Map.Entry<String, Integer> entrata : mapEntrata.entrySet()){
+            Merce merce = new Merce();
+            merce.setAnno(anno);
+            merce.setMese(entrata.getKey());
+            merce.setEntrata(entrata.getValue());
+            merce.setUscita(mapUscita.get(entrata.getKey()));
+            summedList.add(merce);
+        }
+
+        return new EntityResponseDto(summedList, 0);
     }
+
 }
