@@ -14,9 +14,13 @@ public interface ArticoliRepository  extends JpaRepository<Articolo, Long> {
 
     Articolo findById(int id);
 
+    Articolo findByIdArticolo(String idArticolo);
+
+
     @Query(value = """
    SELECT * FROM articolo
-   WHERE (:nome IS NULL OR LOWER(nome) LIKE LOWER(CONCAT('%', :nome, '%')))
+   WHERE is_active = 1
+    AND(:nome IS NULL OR LOWER(nome) LIKE LOWER(CONCAT('%', :nome, '%')))
     AND(:categoria IS NULL OR LOWER(categoria) LIKE(CONCAT('%', :categoria, '%')))
     AND(:ubicazione IS NULL OR LOWER(ubicazione) LIKE(CONCAT('%', :ubicazione, '%')))
     AND(:codice IS NULL OR LOWER(codice) LIKE(CONCAT('%', :codice, '%')))
@@ -50,8 +54,18 @@ public interface ArticoliRepository  extends JpaRepository<Articolo, Long> {
     );
 
     @Query(value = """
+            SELECT * FROM articolo
+            WHERE last_month_record = 1
+             AND strftime('%Y', data_modifica) = :anno
+            """, nativeQuery = true)
+    List<Articolo> searchArticoloGrafico(
+            @Param("anno") String anno
+    );
+
+    @Query(value = """
    SELECT COUNT(*) FROM articolo
-   WHERE (:nome IS NULL OR LOWER(nome) LIKE LOWER(CONCAT('%', :nome, '%')))
+   WHERE is_active = 1
+    AND (:nome IS NULL OR LOWER(nome) LIKE LOWER(CONCAT('%', :nome, '%')))
     AND(:categoria IS NULL OR LOWER(categoria) LIKE(CONCAT('%', :categoria, '%')))
     AND(:ubicazione IS NULL OR LOWER(ubicazione) LIKE(CONCAT('%', :ubicazione, '%')))
     AND(:codice IS NULL OR LOWER(codice) LIKE(CONCAT('%', :codice, '%')))
@@ -88,6 +102,33 @@ public interface ArticoliRepository  extends JpaRepository<Articolo, Long> {
     int updateUbicazioneinArticoli(
             @Param("oldUbicazione") String oldUbicazione,
             @Param("newName") String newName);
+
+    @Modifying
+    @Query(value = """
+    UPDATE articolo
+    SET last_month_record = :lastMonthRecord
+    WHERE id_articolo = :idArticolo
+      AND strftime('%Y-%m', data_modifica) = :yearMonth
+      AND last_month_record <> :lastMonthRecord
+    """, nativeQuery = true)
+    int updateLastMonthRecordInArticoli(
+            @Param("idArticolo") String idArticolo,
+            @Param("yearMonth") String yearMonth,
+            @Param("lastMonthRecord") Boolean lastMonthRecord
+    );
+
+    @Modifying
+    @Query(value = """
+    UPDATE articolo
+    SET is_active = :isActive
+    WHERE id_articolo = :idArticolo
+        AND is_active <> :isActive
+    """, nativeQuery = true)
+    int updateIsActiveInArticoli(
+            @Param("idArticolo") String idArticolo,
+            @Param("isActive") Boolean isActive
+    );
+
 
 
     @Query(value = "SELECT id FROM Articolo ORDER BY id DESC LIMIT 1", nativeQuery = true)

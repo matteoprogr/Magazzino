@@ -13,8 +13,12 @@ export function creaTabellaArticoli(data){
         const tr = document.createElement('tr');
         tr.setAttribute('id', a.id);
         tr.setAttribute('richieste', a.richieste);
+        tr.setAttribute('idArticolo', a.idArticolo);
         const [y, m, d] = a.dataInserimento.split("-");
         const data = `${d}/${m}/${y}`;
+        const [yM, mM, dM] = a.dataModifica.split("-");
+        const dataModifica = `${dM}/${mM}/${yM}`;
+        const valore = a.quantita * a.costoUnita;
         tr.innerHTML = `
             <td>${a.nome}</td>
             <td>${a.categoria}</td>
@@ -22,7 +26,10 @@ export function creaTabellaArticoli(data){
             <td>${a.codice}</td>
             <td>${a.quantita}</td>
             <td>${a.costo}</td>
+            <td>${a.costoUnita}</td>
+            <td>${valore}</td>
             <td>${data}</td>
+            <td>${dataModifica}</td>
         `;
 
         tr.addEventListener('click', () => {
@@ -135,7 +142,7 @@ export async function createOptionMerce(merce, merce2){
 
 function setDataCosto(articoli, valore){
     articoli.forEach( item => {
-    const data = item.dataInserimento.split('-');
+    const data = item.dataModifica.split('-');
     const mese = data[1];
     let index;
     if(mese[0] === '0'){
@@ -144,7 +151,8 @@ function setDataCosto(articoli, valore){
         index = parseInt(mese) - 1;
     }
     const val = valore[index] !== undefined ? valore[index]: 0;
-    valore[index] = item.costo + val;
+    const qcu = item.quantita * item.costoUnita;
+    valore[index] = qcu + val;
     });
 }
 

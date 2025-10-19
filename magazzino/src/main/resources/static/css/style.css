@@ -254,6 +254,12 @@ th {
     align-items: center;
 }
 
+.modOpacity{
+    opacity: 0.6;
+    pointer-events: none;
+    cursor: default;
+}
+
 .row {
   display: flex;
   gap: 10px;

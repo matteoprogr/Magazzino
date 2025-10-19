@@ -64,13 +64,16 @@
             <label id="totRisultati"></label>
             <table id="tabellaRicerca">
                 <colgroup>
-                    <col style="width: 20%;">
-                    <col style="width: 20%;">
-                    <col style="width: 20%;">
                     <col style="width: 15%;">
-                    <col style="width: 7%;">
-                    <col style="width: 7%;">
-                    <col style="width: 6%;">
+                    <col style="width: 15%;">
+                    <col style="width: 10%;">
+                    <col style="width: 10%;">
+                    <col style="width: 10%;">
+                    <col style="width: 10%;">
+                    <col style="width: 10%;">
+                    <col style="width: 10%;">
+                    <col style="width: 5%;">
+                    <col style="width: 5%;">
                 </colgroup>
                 <thead>
                 <tr>
@@ -80,7 +83,10 @@
                     <th>Codice</th>
                     <th>Quantità</th>
                     <th>Costo</th>
-                    <th>Data</th>
+                    <th>Costo(*)Unità</th>
+                    <th>Valore</th>
+                    <th>DataInserimento</th>
+                    <th>DataModifica</th>
                 </tr>
                 </thead>
                 <tbody></tbody>
@@ -96,6 +102,7 @@
             <div id="modaleUpdate" class="modal hidden">
                 <div class="modal-content">
                     <h4>Modifica Articolo</h4>
+                    <label id="error"></label>
                     <div class="row">
                         <div class="column">
                             <label for="modNome" class="labelMod">Nome</label>
@@ -130,10 +137,10 @@
                     </div>
                     <div class="row">
                         <div class="column">
-                            <label for="modData" class="labelMod">Data Inserimento</label><input type="date" id="modData">
+                            <label for="modData" class="labelMod">Data Inserimento</label><input type="date" id="modData" readonly>
                         </div>
                         <div class="column">
-                            <label for="modDataOperazione" class="labelMod">Data Operazione</label><input type="date" id="modDataOperazione">
+                            <label for="modDataModifica" class="labelMod">Data Modifica</label><input type="date" id="modDataModifica">
                         </div>
                     </div>
                     <div class="row buttons">

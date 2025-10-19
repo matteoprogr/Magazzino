@@ -10,10 +10,13 @@ public class Articolo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+    @Column(unique = true)
+    private String idArticolo;
 
     private String nome;
     private int quantita;
-    private int costo;
+    private double costo;
+    private double costoUnita;
     private int richieste;
 
     @Column(unique = true)
@@ -22,4 +25,7 @@ public class Articolo {
     private String ubicazione;
 
     private String dataInserimento;
+    private String dataModifica;
+    private boolean isActive;
+    private boolean lastMonthRecord;
 }

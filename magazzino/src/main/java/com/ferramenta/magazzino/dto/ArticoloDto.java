@@ -10,6 +10,8 @@ public class ArticoloDto {
 
     private int id;
 
+    private String idArticolo;
+
     @NotBlank(message = "il nome non puo essere vuoto")
     @Size(min  = 3, max = 30, message = "Il nome deve avere almeno 3 caratteri e massimo 30")
     private String nome;
@@ -20,6 +22,8 @@ public class ArticoloDto {
     @Min(value = 0, message = "Il costo non puo essere negativo")
     private int costo;
 
+    private double costoUnita;
+
     private String codice;
 
     @NotBlank(message = "La categoria non può essere vuota")
@@ -27,13 +31,14 @@ public class ArticoloDto {
     private String categoria;
 
     @NotBlank(message = "L'ubicazione non può essere vuota")
-    @Size(min = 3, max = 30, message = "La categoria deve avere almeno 3 caratteri e massimo 30")
+    @Size(min = 3, max = 30, message = "L'ubicazione deve avere almeno 3 caratteri e massimo 30")
     private String ubicazione;
 
     private String dataInserimento;
-    private String dataOperazione;
+    private String dataModifica;
 
     private int richieste;
 
     private boolean updatedQuantita;
+    private boolean updatedCosto;
 }

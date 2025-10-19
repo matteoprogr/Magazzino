@@ -77,8 +77,8 @@ async function getCategorie(elementId, inputCat){
     });
 }
 
-async function setDate(){
-const data = document.getElementById("data");
+async function setDate(date = "data"){
+const data = document.getElementById(date);
 const today = new Date();
 const formatted = today.toISOString().split('T')[0];
 data.value = formatted;
@@ -351,15 +351,12 @@ export async function ricercaArticoli(nome, codice, categoria, ubicazione, da, a
     }
 }
 
-export async function ricercaArticoliGraph(da, a, page = 0, size = 0){
+export async function ricercaArticoliGraph(anno){
     try{
         const params = new URLSearchParams();
-        if(da) params.append("da", da);
-        if(a) params.append("a", a);
-        params.append("page", page);
-        params.append("size", size);
+        if(anno) params.append("anno", anno);
 
-        const res = await fetch(`${API_BASE_URL}/ricerca?${params}`);
+        const res = await fetch(`${API_BASE_URL}/ricercaGrafico?${params}`);
         const json = await res.json();
         return json.entity;
     }catch(err){
@@ -535,11 +532,13 @@ async function updateArticolo(dto){
 
         const data = await response.json();
         if(!response.ok){
-            throw new Error(data.messaggio || 'Errore durante l\'update');
+            console.error(data.message || 'Errore durante richiesta');
+            return data;
         }
         console.log(data.messaggio);
         const filtri = await creaFiltri();
         paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione, filtri.da, filtri.a, filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,currentPage -1, pageSize, filtri.sortField));
+        return data;
     }catch(err){
         console.error(err);
     }
@@ -784,6 +783,8 @@ export async function deleteUbicazioniChecked(){
 
 document.getElementById("updateBtn").addEventListener('click', updateArticoliChecked);
 let quantita;
+let costo;
+let costoUnita;
 async function updateArticoliChecked(){
     const table = document.querySelector('#tabellaRicerca tbody');
     const rigaSelected = table.querySelectorAll('tr.selected');
@@ -801,13 +802,15 @@ async function updateArticoliChecked(){
     const celle = rigaSelected[0].querySelectorAll('td');
     const id = rigaSelected[0].id;
     const richieste = rigaSelected[0].getAttribute("richieste");
+    const idArticolo = rigaSelected[0].getAttribute("idArticolo");
     const nome = celle[0].innerText;
     const categoria = celle[1].innerText;
     const ubicazione = celle[2].innerText;
     const codice = celle[3].innerText;
     quantita = celle[4].innerText;
-    const costo = celle[5].innerText;
-    const data = celle[6].innerText;
+    costo = celle[5].innerText;
+    costoUnita = celle[6].innerText;
+    const data = celle[8].innerText;
 
     const [d,m,y] = data.split("/");
     const formatted = `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
@@ -819,13 +822,14 @@ async function updateArticoliChecked(){
     document.querySelector('#modQuantita').value = quantita;
     document.querySelector('#modCosto').value = costo;
     document.querySelector('#modData').value = formatted;
-    document.querySelector('#modDataOperazione').value = formatted;
+    setDate('modDataModifica');
 
     getCategorie("modSelectCategoria","modCategoria");
     getUbicazione("modSelectUbicazione","modUbicazione");
 
     document.querySelector('#modaleUpdate').dataset.id = id;
     document.querySelector('#modaleUpdate').dataset.richieste = richieste;
+    document.querySelector('#modaleUpdate').dataset.idArticolo = idArticolo;
     document.querySelector('#modaleUpdate').classList.remove('hidden');
 
     document.querySelector('#btnChiudiUpdate').addEventListener('click', () => {
@@ -833,13 +837,36 @@ async function updateArticoliChecked(){
     });
 }
 
+const btnSave = document.getElementById('btnSalvaUpdate');
+document.getElementById("modDataModifica").addEventListener("input",checkDate);
+async function checkDate(){
+    const dataInserimento = document.querySelector('#modData').value;
+    const dataModifica = document.querySelector('#modDataModifica').value;
+    if(dataModifica < dataInserimento){
+        document.getElementById("error").textContent = "La dataModifica non può essere inferiore alla data inserimento";
+        btnSave.disabled = true;
+        btnSave.classList.add('modOpacity');
+    }else{
+        btnSave.disabled = false;
+        btnSave.classList.remove('modOpacity');
+        document.getElementById("error").textContent = "";
+    }
+}
+
 document.querySelector('#btnSalvaUpdate').addEventListener('click', async () =>{
     const id = document.querySelector('#modaleUpdate').dataset.id;
     const richieste = document.querySelector('#modaleUpdate').dataset.richieste;
+    const idArticolo = document.querySelector('#modaleUpdate').dataset.idArticolo;
     const quantitaMod = Number(document.querySelector('#modQuantita').value);
+    const costoMod = Number(document.querySelector('#modCosto').value);
+
     let updatedQuantita = false;
     if(Number(quantita) !== quantitaMod){
         updatedQuantita = true;
+    }
+    let updatedCosto = false;
+    if(Number(costo) !== costoMod){
+        updatedCosto = true;
     }
 
     const articolo = {
@@ -851,13 +878,23 @@ document.querySelector('#btnSalvaUpdate').addEventListener('click', async () =>{
         quantita: quantitaMod,
         costo: Number(document.querySelector('#modCosto').value),
         dataInserimento: document.querySelector('#modData').value,
-        dataOperazione: document.querySelector('#modDataOperazione').value,
+        dataModifica: document.querySelector('#modDataModifica').value,
         richieste: richieste,
-        updatedQuantita: updatedQuantita
+        idArticolo: idArticolo,
+        costoUnita: costoUnita,
+        updatedQuantita: updatedQuantita,
+        updatedCosto: updatedCosto
     };
-
-    await updateArticolo(articolo);
-    document.querySelector('#modaleUpdate').classList.add('hidden');
+    try{
+        const response = await updateArticolo(articolo);
+        if(response.status !== 400){
+            document.querySelector('#modaleUpdate').classList.add('hidden');
+        }else{
+            document.getElementById("error").textContent = response.message;
+        }
+    }catch(err){
+        console.error(err);
+    }
 });
 
 document.getElementById("updateBtnCat").addEventListener('click', updateCategoriaChecked);
@@ -1022,11 +1059,11 @@ export function showToast(message,type, time = 3000) {
 async function creaGrafico(anno, anno2){
     const echarts = window.echarts;
     const chart = echarts.init(document.getElementById("chart"));
-    const data = await ricercaArticoliGraph(anno + "-01-01", anno + "-12-31", 0, 0);
+    const data = await ricercaArticoliGraph(anno);
     let data2;
     anno2 = document.getElementById("compara").value;
     if(anno2 !== undefined && anno2 !== null && anno !== parseInt(anno2)){
-        data2 = await ricercaArticoliGraph(anno2 + "-01-01", anno2 + "-12-31", 0, 0);
+        data2 = await ricercaArticoliGraph(anno2);
     }
     const graph = await createOptionCosto(data, data2);
     chart.setOption(graph);

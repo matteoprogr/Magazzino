@@ -4,14 +4,8 @@ import com.ferramenta.magazzino.advice.AlreadyExistsException;
 import com.ferramenta.magazzino.dto.ArticoloDto;
 import com.ferramenta.magazzino.dto.EntityResponseDto;
 import com.ferramenta.magazzino.dto.MerceDto;
-import com.ferramenta.magazzino.entity.Articolo;
-import com.ferramenta.magazzino.entity.Categoria;
-import com.ferramenta.magazzino.entity.Merce;
-import com.ferramenta.magazzino.entity.Ubicazione;
-import com.ferramenta.magazzino.repository.ArticoliRepository;
-import com.ferramenta.magazzino.repository.CategoriaRepository;
-import com.ferramenta.magazzino.repository.MerceRepository;
-import com.ferramenta.magazzino.repository.UbicazioneRepository;
+import com.ferramenta.magazzino.entity.*;
+import com.ferramenta.magazzino.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +14,7 @@ import java.text.Normalizer;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 
 @Service
@@ -38,29 +33,58 @@ public class MagazzinoService {
         this.merceRepository = merceRepository;
     }
 
+
     public void addArticolo(ArticoloDto dto){
         dto.setCategoria(addCategoria(dto.getCategoria()));
         dto.setUbicazione(addUbicazione(dto.getUbicazione()));
         dto.setCodice(creaCodiceByNomeAndCategoriaAndUbicazione(dto.getNome(), dto.getCategoria(), dto.getUbicazione(), null));
         Articolo articolo = dtoToArticoloWithoutId(dto);
+        articolo.setIdArticolo(UUID.randomUUID().toString());
         articoliRepository.save(articolo);
     }
 
+    @Transactional
     public void updateArticolo(ArticoloDto dto){
-        dto.setCategoria(addCategoria(dto.getCategoria()));
-        dto.setUbicazione(addUbicazione(dto.getUbicazione()));
-        dto.setCodice(creaCodiceByNomeAndCategoriaAndUbicazione(dto.getNome(), dto.getCategoria(), dto.getUbicazione(), dto.getId()));
-        Articolo articolo = dtoToArticoloWithoutId(dto);
-        articolo.setId(dto.getId());
-        articoliRepository.save(articolo);
+        try{
+            dto.setCategoria(addCategoria(dto.getCategoria()));
+            dto.setUbicazione(addUbicazione(dto.getUbicazione()));
+            dto.setCodice(creaCodiceByNomeAndCategoriaAndUbicazione(dto.getNome(), dto.getCategoria(), dto.getUbicazione(), dto.getId()));
+            Articolo articolo = dtoToArticoloWithoutId(dto);
+            if(!dto.isUpdatedQuantita()){
+                articolo.setId(dto.getId());
+            }else{
+                int activeMod = articoliRepository.updateIsActiveInArticoli(dto.getIdArticolo(), false);
+                String yearMonth = getYaerMonth(dto.getDataModifica());
+                articoliRepository.updateLastMonthRecordInArticoli(dto.getIdArticolo(),yearMonth, false);
+                if(activeMod == 0){ throw new RuntimeException("Nessun record modificato per isActive"); }
+            }
+            articolo.setIdArticolo(dto.getIdArticolo());
+            articoliRepository.save(articolo);
+        }catch (Exception e){
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String getYaerMonth(String dataCompleta){
+        String [] dataArray = dataCompleta.split("-");
+        return dataArray[0] + "-" + dataArray[1];
     }
 
     public void deleteArticolo(List<Integer> ids){
-        for(int id : ids){
-            Articolo articolo = new Articolo();
-            articolo.setId(id);
-            articoliRepository.delete(articolo);
+        // TODO aggiungere idArticolo a entity merce cosi da poter associare i movimenti
+        //  in entrata e in uscita a un record specifico
+        try{
+            for(int id : ids){
+                Articolo articolo = new Articolo();
+                articolo.setId(id);
+                articoliRepository.delete(articolo);
+            }
+        }catch (Exception e){
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
+
     }
 
     public EntityResponseDto ricercaArticoli(String nome, String categoria, String ubicazione, String codice, String da, String a, Integer min, Integer max, Integer minCosto, Integer maxCosto, int limit, int offset, String sortField){
@@ -76,6 +100,12 @@ public class MagazzinoService {
         return new EntityResponseDto(list,count);
     }
 
+    public EntityResponseDto ricercaArticoliGrafico(String anno){
+
+        List<Articolo> list = articoliRepository.searchArticoloGrafico(anno);
+        return new EntityResponseDto(list,0);
+    }
+
     private Articolo dtoToArticoloWithoutId(ArticoloDto dto){
         Articolo articolo = new Articolo();
         articolo.setNome(capitalize(dto.getNome()));
@@ -85,18 +115,28 @@ public class MagazzinoService {
         articolo.setCosto(dto.getCosto());
         articolo.setCategoria(dto.getCategoria());
         articolo.setDataInserimento(dto.getDataInserimento());
+        articolo.setDataModifica(dto.getDataModifica() != null ? dto.getDataModifica() : dto.getDataInserimento());
+        double costoUnita = 0.0;
         int richieste = dto.getRichieste();
         if(richieste == 0){
             articolo.setRichieste(1);
+            costoUnita = Math.round( ((double) dto.getCosto() / dto.getQuantita()) * 100.0) / 100.0;
             saveMerce(dto);
         }else if(dto.isUpdatedQuantita()){
             articolo.setRichieste(richieste + 1);
             updateMerce(dto);
-        }else {
+            costoUnita = dto.getCostoUnita();
+        }else if(dto.isUpdatedCosto()){
+            costoUnita = Math.round( ((double) dto.getCosto() / dto.getQuantita()) * 100.0) / 100.0;
+        }else{
             articolo.setRichieste(richieste);
         }
+        articolo.setCostoUnita(costoUnita);
+        articolo.setActive(true);
+        articolo.setLastMonthRecord(true);
         return articolo;
     }
+
 
     private void saveMerce(ArticoloDto dto){
         String [] data = dto.getDataInserimento().split("-");
@@ -115,7 +155,6 @@ public class MagazzinoService {
             merce.setAnno(data[0]);
             merceRepository.save(merce);
         }
-
     }
 
     private void updateMerce(ArticoloDto dto){
@@ -123,9 +162,9 @@ public class MagazzinoService {
         int diff = articolo.getQuantita() - dto.getQuantita();
         String mese;
         String anno;
-        String dataOperazione = dto.getDataOperazione();
-        if(dataOperazione != null){
-            String [] data = dataOperazione.split("-");
+        String dataModifica = dto.getDataModifica();
+        if(dataModifica != null){
+            String [] data = dataModifica.split("-");
             mese = data[1];
             anno = data[0];
         }else{

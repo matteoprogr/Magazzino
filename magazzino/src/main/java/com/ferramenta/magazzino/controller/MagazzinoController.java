@@ -12,6 +12,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/magazzino")
 @CrossOrigin(origins = "*")
+
 public class MagazzinoController {
 
     private final MagazzinoService magazzinoService;
@@ -75,6 +76,16 @@ public class MagazzinoController {
         try{
             return magazzinoService.ricercaArticoli(nome, categoria, ubicazione, codice, da, a, min, max, minCosto, maxCosto,size,page * size, sortField);
 
+        }catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+    @GetMapping("/ricercaGrafico")
+    public EntityResponseDto ricercaGrafico(
+            @RequestParam(required = true) String anno) {
+
+        try{
+            return magazzinoService.ricercaArticoliGrafico(anno);
         }catch (Exception e){
             throw new RuntimeException(e);
         }
