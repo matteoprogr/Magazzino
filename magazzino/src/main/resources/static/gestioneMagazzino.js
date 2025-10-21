@@ -26,8 +26,8 @@ export function creaTabellaArticoli(data){
             <td>${a.codice}</td>
             <td>${a.quantita}</td>
             <td>${a.costo}</td>
-            <td>${a.costoUnita}</td>
-            <td>${valore}</td>
+            <td>${a.costoUnita.toFixed(2)}</td>
+            <td>${valore.toFixed(2)}</td>
             <td>${data}</td>
             <td>${dataModifica}</td>
         `;
@@ -64,6 +64,15 @@ function setData(merce, entrata, uscita){
     entrata[index] = item.entrata;
     uscita[index] = item.uscita;
     });
+    let primoIndice = entrata.findIndex(x => x !== undefined);
+    const ultimoIndice = entrata.findLastIndex(x => x !== undefined);
+    if (primoIndice === ultimoIndice) primoIndice = -1;
+    for(let i = primoIndice + 1; i < ultimoIndice; i++){
+        if(entrata[i] === undefined){
+            entrata[i] = 0;
+            uscita[i] = 0;
+        }
+    }
 }
 
 
@@ -152,7 +161,8 @@ function setDataCosto(articoli, valore){
     }
     const val = valore[index] !== undefined ? valore[index]: 0;
     const qcu = item.quantita * item.costoUnita;
-    valore[index] = qcu + val;
+    const totvalue = qcu + val;
+    valore[index] = Number(totvalue.toFixed(2));
     });
 }
 

@@ -65,6 +65,8 @@ public class MagazzinoController {
             @RequestParam(required = false) String codice,
             @RequestParam(required = false) String da,
             @RequestParam(required = false) String a,
+            @RequestParam(required = false) String daM,
+            @RequestParam(required = false) String aM,
             @RequestParam(defaultValue = "richieste") String sortField,
             @RequestParam(required = false) Integer min,
             @RequestParam(required = false) Integer max,
@@ -74,7 +76,7 @@ public class MagazzinoController {
             @RequestParam(defaultValue = "25") int size) {
 
         try{
-            return magazzinoService.ricercaArticoli(nome, categoria, ubicazione, codice, da, a, min, max, minCosto, maxCosto,size,page * size, sortField);
+            return magazzinoService.ricercaArticoli(nome, categoria, ubicazione, codice, da, a, daM, aM, min, max, minCosto, maxCosto,size,page * size, sortField);
 
         }catch (Exception e){
             throw new RuntimeException(e);
@@ -82,10 +84,11 @@ public class MagazzinoController {
     }
     @GetMapping("/ricercaGrafico")
     public EntityResponseDto ricercaGrafico(
-            @RequestParam(required = true) String anno) {
+            @RequestParam(required = true) String anno,
+            @RequestParam(required = false) String direzione) {
 
         try{
-            return magazzinoService.ricercaArticoliGrafico(anno);
+            return magazzinoService.ricercaArticoliGrafico(anno, direzione);
         }catch (Exception e){
             throw new RuntimeException(e);
         }

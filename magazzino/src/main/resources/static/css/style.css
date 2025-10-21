@@ -84,6 +84,7 @@ table {
 th, td {
   border: 1px solid #ddd;
   text-align: left;
+  font-size: 14px;
 }
 
 th {

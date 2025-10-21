@@ -8,10 +8,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     getCategorie("selectCategoriaInput", "categoriaInput");
     getUbicazione("selectUbicazione", "addUbicazione");
     getUbicazione("selectUbicazioneInput","ubicazioneInput");
-    setDate();
     setDateSearch();
     const filtri = await creaFiltri();
-    paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione, filtri.da, filtri.a, filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,currentPage -1, pageSize, filtri.sortField));
+    paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
+                                      filtri.da, filtri.a, filtri.daM, filtri.aM,
+                                      filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
+                                      currentPage -1, pageSize, filtri.sortField));
 });
 
 
@@ -30,9 +32,11 @@ document.querySelectorAll('.nav-links a').forEach(link => {
         getUbicazione("selectUbicazione", "addUbicazione");
         getUbicazione("selectUbicazioneInput","ubicazioneInput");
         setDateSearch();
-        setDate();
         const filtri = await creaFiltri();
-        paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione, filtri.da, filtri.a, filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,currentPage -1, pageSize, filtri.sortField));
+        paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
+                                          filtri.da, filtri.a, filtri.daM, filtri.aM,
+                                          filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
+                                          currentPage -1, pageSize, filtri.sortField));
     }
     if(target === "gestione"){
         getCategorie("selectCategoriaSearch","categoriaSearch");
@@ -77,24 +81,18 @@ async function getCategorie(elementId, inputCat){
     });
 }
 
-async function setDate(date = "data"){
-const data = document.getElementById(date);
-const today = new Date();
-const formatted = today.toISOString().split('T')[0];
-data.value = formatted;
-}
-
 async function setDateSearch(){
-const data_da = document.getElementById("data_da");
-const data_a = document.getElementById("data_a");
+const data_daModifica = document.getElementById("dataM_da");
+const data_aModifica = document.getElementById("dataM_a");
 const today = new Date();
 const formatted = today.toISOString().split('T')[0];
 
 const lastMonth = new Date(today);
 lastMonth.setMonth(lastMonth.getMonth() - 1);
 const formattedLast = lastMonth.toISOString().split('T')[0];
-data_da.value = formattedLast;
-data_a.value = formatted;
+
+data_daModifica.value = formattedLast;
+data_aModifica.value = formatted;
 }
 
 async function getYear(){
@@ -128,6 +126,8 @@ async function creaFiltri(){
     const ubicazioneInput = document.getElementById("ubicazioneInput").value.trim();
     const dataDaInput = document.getElementById("data_da").value;
     const dataAInput = document.getElementById("data_a").value;
+    const dataDaInputM = document.getElementById("dataM_da").value;
+    const dataAInputM = document.getElementById("dataM_a").value;
     const minInput = document.getElementById("minInput").value;
     const maxInput = document.getElementById("maxInput").value;
     const minCostoInput = document.getElementById("minCostoInput").value;
@@ -141,6 +141,8 @@ async function creaFiltri(){
         ubicazione: ubicazioneInput !== "" ? ubicazioneInput : null,
         da: dataDaInput !== "" ? dataDaInput : null,
         a: dataAInput !== "" ? dataAInput : null,
+        daM: dataDaInputM !== "" ? dataDaInputM : null,
+        aM: dataAInputM !== "" ? dataAInputM : null,
         min: minInput !== "" ? minInput : null,
         max: maxInput !== "" ? maxInput : null,
         minCosto: minCostoInput !== "" ? minCostoInput : null,
@@ -168,7 +170,10 @@ const searchForm = document.getElementById("ricercaForm");
 searchForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const filtri = await creaFiltri();
-    paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione, filtri.da, filtri.a, filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,currentPage -1, pageSize, filtri.sortField));
+    paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
+                                      filtri.da, filtri.a, filtri.daM, filtri.aM,
+                                      filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
+                                      currentPage -1, pageSize, filtri.sortField));
 });
 
 
@@ -198,14 +203,17 @@ form.addEventListener("submit", async (e) => {
             nome: document.getElementById("addNome").value.trim(),
             categoria: document.getElementById("addCategoria").value.trim(),
             ubicazione: document.getElementById("addUbicazione").value.trim(),
-            dataInserimento: document.getElementById("data").value,
             quantita: parseInt(document.getElementById("addQuantita").value),
             costo: parseInt(document.getElementById("addCosto").value)
         }
         const res = await aggiungiArticolo(articolo);
         console.log(res.messaggio);
         const filtri = await creaFiltri();
-        paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione, filtri.da, filtri.a, filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,currentPage -1, pageSize, filtri.sortField));
+        paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
+                                          filtri.da, filtri.a, filtri.daM, filtri.aM,
+                                          filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
+                                          currentPage -1, pageSize, filtri.sortField));
+
         getCategorie("selectCategoria", "addCategoria");
         getCategorie("selectCategoriaInput", "categoriaInput");
         getUbicazione("modSelectUbicazione","modUbicazione");
@@ -216,7 +224,6 @@ form.addEventListener("submit", async (e) => {
         showToast(msg ,"warning", 5000);
     }
         form.reset();
-        setDate();
 });
 
 const addCategoriaForm = document.getElementById("addCategoriaForm");
@@ -320,7 +327,8 @@ export async function aggiungiUbicazione(ubicazioneDto){
 
 
 ///////////////// RICERCA ///////////////////////
-export async function ricercaArticoli(nome, codice, categoria, ubicazione, da, a, min, max, minCosto, maxCosto, page = 0, size = 25, sortField){
+export async function ricercaArticoli(nome, codice, categoria, ubicazione, da, a, daM, aM, min, max, minCosto, maxCosto,
+                                      page = 0, size = 25, sortField){
     try{
         const labelRisultati = document.getElementById("totRisultati");
         const params = new URLSearchParams();
@@ -330,6 +338,8 @@ export async function ricercaArticoli(nome, codice, categoria, ubicazione, da, a
         if(ubicazione) params.append("ubicazione", ubicazione);
         if(da) params.append("da", da);
         if(a) params.append("a", a);
+        if(daM) params.append("daM", daM);
+        if(aM) params.append("aM", aM);
         if(min !== undefined && min !== null) params.append("min", min);
         if(max !== undefined && max !== null) params.append("max", max);
         if(minCosto !== undefined && minCosto !== null) params.append("minCosto", minCosto);
@@ -351,10 +361,11 @@ export async function ricercaArticoli(nome, codice, categoria, ubicazione, da, a
     }
 }
 
-export async function ricercaArticoliGraph(anno){
+export async function ricercaArticoliGraph(anno, direzione){
     try{
         const params = new URLSearchParams();
         if(anno) params.append("anno", anno);
+        if(direzione) params.append("direzione", direzione);
 
         const res = await fetch(`${API_BASE_URL}/ricercaGrafico?${params}`);
         const json = await res.json();
@@ -472,7 +483,10 @@ async function deleteArticoli(ids){
         throw new Error(data.message || 'Errore durante il delete');
     }
     const filtri = await creaFiltri();
-    paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione, filtri.da, filtri.a, filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,currentPage -1, pageSize, filtri.sortField));
+    paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
+                                      filtri.da, filtri.a, filtri.daM, filtri.aM,
+                                      filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
+                                      currentPage -1, pageSize, filtri.sortField));
 
     }catch(err){
         console.error('Errore', err.message);
@@ -537,7 +551,10 @@ async function updateArticolo(dto){
         }
         console.log(data.messaggio);
         const filtri = await creaFiltri();
-        paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione, filtri.da, filtri.a, filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,currentPage -1, pageSize, filtri.sortField));
+        paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
+                                          filtri.da, filtri.a, filtri.daM, filtri.aM,
+                                          filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
+                                          currentPage -1, pageSize, filtri.sortField));
         return data;
     }catch(err){
         console.error(err);
@@ -613,14 +630,20 @@ prevBtn.addEventListener("click", async () => {
     if(currentPage > 0) {
         currentPage--;
         const filtri = await creaFiltri();
-        paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione, filtri.da, filtri.a, filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,currentPage -1, pageSize, filtri.sortField));
+        paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
+                                          filtri.da, filtri.a, filtri.daM, filtri.aM,
+                                          filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
+                                          currentPage -1, pageSize, filtri.sortField));
     }
 });
 
 nextBtn.addEventListener("click", async () => {
     currentPage++;
     const filtri = await creaFiltri();
-    paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione, filtri.da, filtri.a, filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,currentPage -1, pageSize, filtri.sortField));
+    paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
+                                      filtri.da, filtri.a, filtri.daM, filtri.aM,
+                                      filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
+                                      currentPage -1, pageSize, filtri.sortField));
 });
 
 ////////// PAGINAZIONE CATEGORIE //////////////
@@ -693,7 +716,7 @@ const pageInfoGr = document.getElementById("pageInfoGr");
 prevBtnGr.addEventListener("click", async () => {
     currentPageGr--;
     pageInfoGr.innerText = `${currentPageGr}`;
-    creaGrafico(currentPageGr);
+    creaGrafico(currentPageGr, null, "indietro");
     creaGraficoMerce(currentPageGr);
     creaTabellaMerce(await ricercaMerce(currentPageGr));
 });
@@ -701,7 +724,7 @@ prevBtnGr.addEventListener("click", async () => {
 nextBtnGr.addEventListener("click", async () => {
     currentPageGr++;
     pageInfoGr.innerText = `${currentPageGr}`;
-    creaGrafico(currentPageGr);
+    creaGrafico(currentPageGr, null, "avanti");
     creaGraficoMerce(currentPageGr);
     creaTabellaMerce(await ricercaMerce(currentPageGr));
 });
@@ -760,10 +783,24 @@ export async function deleteUbicazioniChecked(){
     getUbicazione("selectUbicazioneSearch","ubicazioneSearch");
 }
 
+
+async function setDate(date, dataValue){
+const data = document.getElementById(date);
+const today = new Date();
+const formatted = today.toISOString().split('T')[0];
+if(formatted >= dataValue){
+    data.value = formatted;
+}else{
+    data.value = dataValue;
+}
+}
+
 document.getElementById("updateBtn").addEventListener('click', updateArticoliChecked);
 let quantita;
 let costo;
 let costoUnita;
+let dataModificaPrecedente;
+let formattedM;
 async function updateArticoliChecked(){
     const table = document.querySelector('#tabellaRicerca tbody');
     const rigaSelected = table.querySelectorAll('tr.selected');
@@ -788,11 +825,14 @@ async function updateArticoliChecked(){
     const codice = celle[3].innerText;
     quantita = celle[4].innerText;
     costo = celle[5].innerText;
-    costoUnita = celle[6].innerText;
+    costoUnita = Number(quantita) / Number(costo);
     const data = celle[8].innerText;
+    const dataM = celle[9].innerText;
 
     const [d,m,y] = data.split("/");
     const formatted = `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+    const [dM,mM,yM] = dataM.split("/");
+    formattedM = `${yM}-${mM.padStart(2,'0')}-${dM.padStart(2,'0')}`;
 
     document.querySelector('#modNome').value = nome;
     document.querySelector('#modCategoria').value = categoria;
@@ -801,7 +841,9 @@ async function updateArticoliChecked(){
     document.querySelector('#modQuantita').value = quantita;
     document.querySelector('#modCosto').value = costo;
     document.querySelector('#modData').value = formatted;
-    setDate('modDataModifica');
+
+    setDate("modDataModifica", formattedM);
+    dataModificaPrecedente = document.querySelector('#modDataModifica').value;
 
     getCategorie("modSelectCategoria","modCategoria");
     getUbicazione("modSelectUbicazione","modUbicazione");
@@ -820,9 +862,14 @@ const btnSave = document.getElementById('btnSalvaUpdate');
 document.getElementById("modDataModifica").addEventListener("input",checkDate);
 async function checkDate(){
     const dataInserimento = document.querySelector('#modData').value;
-    const dataModifica = document.querySelector('#modDataModifica').value;
+    const dataModifica = document.querySelector('#modDataModifica').value;;
     if(dataModifica < dataInserimento){
         document.getElementById("error").textContent = "La data modifica non può essere inferiore alla data inserimento";
+        btnSave.disabled = true;
+        btnSave.classList.add('modOpacity');
+    }
+    if(dataModifica < dataModificaPrecedente){
+        document.getElementById("error").textContent = "La data di modifica deve essere successiva o uguale alla precedente";
         btnSave.disabled = true;
         btnSave.classList.add('modOpacity');
     }else{
@@ -978,10 +1025,10 @@ export function showToast(message,type, time = 3000) {
   }, time);
 }
 
-async function creaGrafico(anno, anno2){
+async function creaGrafico(anno, anno2, direzione){
     const echarts = window.echarts;
     const chart = echarts.init(document.getElementById("chart"));
-    const data = await ricercaArticoliGraph(anno);
+    const data = await ricercaArticoliGraph(anno, direzione);
     let data2;
     anno2 = document.getElementById("compara").value;
     if(isValid(anno2) && anno !== parseInt(anno2)){

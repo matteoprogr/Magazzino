@@ -29,7 +29,6 @@
                 <select id="selectCategoria"></select>
                 <input type="text" id="addUbicazione" placeholder="Ubicazione">
                 <select id="selectUbicazione"></select>
-                <input type="date" id="data" required>
                 <input type="number" id="addQuantita" placeholder="Quantità" max="1000000000">
                 <input type="number" id="addCosto" placeholder="Costo" max="1000000000">
                 <button type="submit">Aggiungi</button>
@@ -42,10 +41,14 @@
                 <select id="selectCategoriaInput"></select>
                 <input type="text" id="ubicazioneInput" placeholder="Ubicazione">
                 <select id="selectUbicazioneInput"></select>
-                <label class="dataLabel">Da</label>
+                <label class="dataLabel">Da (inserimento)</label>
                 <input type="date" id="data_da">
-                <label class="dataLabel">A</label>
+                <label class="dataLabel">A (inserimento)</label>
                 <input type="date" id="data_a">
+                <label class="dataLabel">Da (modifica)</label>
+                <input type="date" id="dataM_da">
+                <label class="dataLabel">A (modifica)</label>
+                <input type="date" id="dataM_a">
                 <input type="number" id="minInput" placeholder="min Quantità" min="0">
                 <input type="number" id="maxInput" placeholder="max Quantità" max="1000000000">
                 <input type="number" id="minCostoInput" placeholder="min Costo" min="0">
@@ -64,14 +67,14 @@
             <label id="totRisultati"></label>
             <table id="tabellaRicerca">
                 <colgroup>
+                    <col style="width: 20%;">
+                    <col style="width: 20%;">
                     <col style="width: 15%;">
                     <col style="width: 15%;">
-                    <col style="width: 10%;">
-                    <col style="width: 10%;">
-                    <col style="width: 10%;">
-                    <col style="width: 10%;">
-                    <col style="width: 10%;">
-                    <col style="width: 10%;">
+                    <col style="width: 5%;">
+                    <col style="width: 5%;">
+                    <col style="width: 5%;">
+                    <col style="width: 5%;">
                     <col style="width: 5%;">
                     <col style="width: 5%;">
                 </colgroup>
@@ -83,10 +86,10 @@
                     <th>Codice</th>
                     <th>Quantità</th>
                     <th>Costo</th>
-                    <th>Costo(*)Unità</th>
+                    <th>(*)Unità</th>
                     <th>Valore</th>
-                    <th>DataInserimento</th>
-                    <th>DataModifica</th>
+                    <th>Inserimento</th>
+                    <th>Modifica</th>
                 </tr>
                 </thead>
                 <tbody></tbody>
