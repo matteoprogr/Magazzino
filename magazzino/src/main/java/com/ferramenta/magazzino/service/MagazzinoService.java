@@ -104,6 +104,22 @@ public class MagazzinoService {
                 .build();
     }
 
+    public EntityResponseDto ricercaArticoliEntity(String nome, String categoria, String ubicazione, String codice, String da, String a, String daM, String aM ,Integer min, Integer max, Integer minCosto, Integer maxCosto, int limit, int offset, String sortField, String direzione){
+
+        if(sortField == null || sortField.isEmpty()){
+            sortField = "richieste";
+        }
+        if(limit == 0){
+            limit = Integer.MAX_VALUE;
+        }
+        List<Articolo> list = articoliRepository.searchArticoliEntity(nome, capitalize(categoria), capitalize(ubicazione),codice, da, a, daM, aM, min, max, minCosto, maxCosto, limit, offset, sortField, direzione);
+        long count = articoliRepository.countArticoli(nome, capitalize(categoria), capitalize(ubicazione),codice, da, a, daM, aM, min, max, minCosto, maxCosto);
+        return EntityResponseDto.builder()
+                .entity(list)
+                .count(count)
+                .build();
+    }
+
     public EntityResponseDto ricercaArticoliGrafico(String anno, String direzione){
 
         if(!isGraficoUpdated) {
@@ -180,6 +196,7 @@ public class MagazzinoService {
             costoUnita = dto.getCostoUnita();
         }
         articolo.setCostoUnita(costoUnita);
+        articolo.setValore(costoUnita * dto.getQuantita());
         articolo.setActive(true);
         articolo.setLastMonthRecord(true);
         return articolo;

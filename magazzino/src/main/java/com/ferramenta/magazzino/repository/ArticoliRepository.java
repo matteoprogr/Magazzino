@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ArticoliRepository  extends JpaRepository<Articolo, Long> {
+public interface ArticoliRepository  extends JpaRepository<Articolo, Long>, ArticoliRepositoryCustom {
 
     Articolo findById(int id);
 

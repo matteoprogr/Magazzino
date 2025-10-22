@@ -17,6 +17,7 @@ public class Articolo {
     private int quantita;
     private double costo;
     private double costoUnita;
+    private double valore;
     private int richieste;
 
     @Column(unique = true)

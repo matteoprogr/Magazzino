@@ -18,7 +18,6 @@ export function creaTabellaArticoli(data){
         const data = `${d}/${m}/${y}`;
         const [yM, mM, dM] = a.dataModifica.split("-");
         const dataModifica = `${dM}/${mM}/${yM}`;
-        const valore = a.quantita * a.costoUnita;
         tr.innerHTML = `
             <td>${a.nome}</td>
             <td>${a.categoria}</td>
@@ -27,7 +26,7 @@ export function creaTabellaArticoli(data){
             <td>${a.quantita}</td>
             <td>${a.costo}</td>
             <td>${a.costoUnita.toFixed(2)}</td>
-            <td>${valore.toFixed(2)}</td>
+            <td>${a.valore.toFixed(2)}</td>
             <td>${data}</td>
             <td>${dataModifica}</td>
         `;
@@ -160,7 +159,7 @@ function setDataCosto(articoli, valore){
         index = parseInt(mese) - 1;
     }
     const val = valore[index] !== undefined ? valore[index]: 0;
-    const qcu = item.quantita * item.costoUnita;
+    const qcu = item.valore;
     const totvalue = qcu + val;
     valore[index] = Number(totvalue.toFixed(2));
     });

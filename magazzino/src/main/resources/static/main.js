@@ -9,11 +9,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     getUbicazione("selectUbicazione", "addUbicazione");
     getUbicazione("selectUbicazioneInput","ubicazioneInput");
     setDateSearch();
+    configurazioneSortIndicator();
     const filtri = await creaFiltri();
     paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
                                       filtri.da, filtri.a, filtri.daM, filtri.aM,
                                       filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
-                                      currentPage -1, pageSize, filtri.sortField));
+                                      currentPage -1, pageSize, filtri.sortField, "DESC"));
 });
 
 
@@ -36,7 +37,7 @@ document.querySelectorAll('.nav-links a').forEach(link => {
         paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
                                           filtri.da, filtri.a, filtri.daM, filtri.aM,
                                           filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
-                                          currentPage -1, pageSize, filtri.sortField));
+                                          currentPage -1, pageSize, filtri.sortField, "DESC"));
     }
     if(target === "gestione"){
         getCategorie("selectCategoriaSearch","categoriaSearch");
@@ -132,7 +133,14 @@ async function creaFiltri(){
     const maxInput = document.getElementById("maxInput").value;
     const minCostoInput = document.getElementById("minCostoInput").value;
     const maxCostoInput = document.getElementById("maxCostoInput").value;
-    const sortField = document.getElementById("selectSort").value;
+    const activeHeader = document.querySelector('#tabellaRicerca th.active');
+    let sortField = "";
+    let direzione = "";
+    if(activeHeader){
+      sortField = activeHeader.dataset.col;
+      direzione = activeHeader.querySelector('.sort-indicator').textContent === '▲' ? 'ASC' : 'DESC';
+    }
+
 
     const filtri = {
         nome: nomeInput !== "" ? nomeInput : null,
@@ -147,10 +155,60 @@ async function creaFiltri(){
         max: maxInput !== "" ? maxInput : null,
         minCosto: minCostoInput !== "" ? minCostoInput : null,
         maxCosto: maxCostoInput !== "" ? maxCostoInput : null,
-        sortField: sortField
+        sortField: sortField !== "" ? sortField : "richieste",
+        direzione: direzione !== "" ? direzione : "DESC"
     };
 
     return filtri;
+}
+const reset = document.getElementById("reset").addEventListener('click', resetFiltri);
+async function resetFiltri(){
+    const headers = document.querySelectorAll('#tabellaRicerca th');
+    headers.forEach(th => {
+        const indicator = th.querySelector(".sort-indicator");
+        th.classList.remove("active");
+        indicator.textContent = '▲';
+    });
+    const filtri = await creaFiltri();
+    paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
+                                          filtri.da, filtri.a, filtri.daM, filtri.aM,
+                                          filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
+                                          currentPage -1, pageSize, filtri.sortField, filtri.direzione));
+}
+
+async function configurazioneSortIndicator(){
+    const headers = document.querySelectorAll('#tabellaRicerca th');
+    let currentSort = {col: null, dir: "DESC"};
+    headers.forEach(th => {
+        th.addEventListener('click', async () =>{
+            const col = th.dataset.col;
+            let dir = "DESC";
+            if(currentSort.col === col && currentSort.dir === "DESC"){
+                dir = "ASC";
+            }
+            currentSort = {col,dir};
+            updateSortIndicators(headers, currentSort);
+            const filtri = await creaFiltri();
+            paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
+                                                  filtri.da, filtri.a, filtri.daM, filtri.aM,
+                                                  filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
+                                                  currentPage -1, pageSize, filtri.sortField, filtri.direzione));
+        });
+    });
+    updateSortIndicators(headers, currentSort,reset);
+}
+
+function updateSortIndicators(headers, currentSort){
+    headers.forEach(th => {
+        const indicator = th.querySelector(".sort-indicator");
+        if(th.dataset.col === currentSort.col){
+            th.classList.add("active");
+            indicator.textContent = currentSort.dir === 'DESC' ? '▼' : '▲';
+        }else{
+            th.classList.remove("active");
+            indicator.textContent = '▲';
+        }
+    });
 }
 
 async function creaFiltriCat(){
@@ -173,7 +231,7 @@ searchForm.addEventListener("submit", async (e) => {
     paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
                                       filtri.da, filtri.a, filtri.daM, filtri.aM,
                                       filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
-                                      currentPage -1, pageSize, filtri.sortField));
+                                      currentPage -1, pageSize, filtri.sortField, filtri.direzione));
 });
 
 
@@ -212,7 +270,7 @@ form.addEventListener("submit", async (e) => {
         paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
                                           filtri.da, filtri.a, filtri.daM, filtri.aM,
                                           filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
-                                          currentPage -1, pageSize, filtri.sortField));
+                                          currentPage -1, pageSize, filtri.sortField, filtri.direzione));
 
         getCategorie("selectCategoria", "addCategoria");
         getCategorie("selectCategoriaInput", "categoriaInput");
@@ -328,7 +386,7 @@ export async function aggiungiUbicazione(ubicazioneDto){
 
 ///////////////// RICERCA ///////////////////////
 export async function ricercaArticoli(nome, codice, categoria, ubicazione, da, a, daM, aM, min, max, minCosto, maxCosto,
-                                      page = 0, size = 25, sortField){
+                                      page = 0, size = 25, sortField, direzione = "DESC"){
     try{
         const labelRisultati = document.getElementById("totRisultati");
         const params = new URLSearchParams();
@@ -347,6 +405,7 @@ export async function ricercaArticoli(nome, codice, categoria, ubicazione, da, a
         params.append("page", page);
         params.append("size", size);
         if(sortField) params.append("sortField", sortField);
+        params.append("direzione", direzione);
 
         const res = await fetch(`${API_BASE_URL}/ricerca?${params}`);
         const json = await res.json();
@@ -486,7 +545,7 @@ async function deleteArticoli(ids){
     paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
                                       filtri.da, filtri.a, filtri.daM, filtri.aM,
                                       filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
-                                      currentPage -1, pageSize, filtri.sortField));
+                                      currentPage -1, pageSize, filtri.sortField, filtri.direzione));
 
     }catch(err){
         console.error('Errore', err.message);
@@ -554,7 +613,7 @@ async function updateArticolo(dto){
         paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
                                           filtri.da, filtri.a, filtri.daM, filtri.aM,
                                           filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
-                                          currentPage -1, pageSize, filtri.sortField));
+                                          currentPage -1, pageSize, filtri.sortField, filtri.direzione));
         return data;
     }catch(err){
         console.error(err);
@@ -633,7 +692,7 @@ prevBtn.addEventListener("click", async () => {
         paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
                                           filtri.da, filtri.a, filtri.daM, filtri.aM,
                                           filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
-                                          currentPage -1, pageSize, filtri.sortField));
+                                          currentPage -1, pageSize, filtri.sortField, filtri.direzione));
     }
 });
 
@@ -643,7 +702,7 @@ nextBtn.addEventListener("click", async () => {
     paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
                                       filtri.da, filtri.a, filtri.daM, filtri.aM,
                                       filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
-                                      currentPage -1, pageSize, filtri.sortField));
+                                      currentPage -1, pageSize, filtri.sortField, filtri.direzione));
 });
 
 ////////// PAGINAZIONE CATEGORIE //////////////
@@ -790,8 +849,10 @@ const today = new Date();
 const formatted = today.toISOString().split('T')[0];
 if(formatted >= dataValue){
     data.value = formatted;
+    return formatted;
 }else{
     data.value = dataValue;
+    return dataValue;
 }
 }
 
@@ -799,7 +860,7 @@ document.getElementById("updateBtn").addEventListener('click', updateArticoliChe
 let quantita;
 let costo;
 let costoUnita;
-let dataModificaPrecedente;
+let dataOdierna;
 let formattedM;
 async function updateArticoliChecked(){
     const table = document.querySelector('#tabellaRicerca tbody');
@@ -825,7 +886,7 @@ async function updateArticoliChecked(){
     const codice = celle[3].innerText;
     quantita = celle[4].innerText;
     costo = celle[5].innerText;
-    costoUnita = Number(quantita) / Number(costo);
+    costoUnita = celle[6].innerText;
     const data = celle[8].innerText;
     const dataM = celle[9].innerText;
 
@@ -841,9 +902,7 @@ async function updateArticoliChecked(){
     document.querySelector('#modQuantita').value = quantita;
     document.querySelector('#modCosto').value = costo;
     document.querySelector('#modData').value = formatted;
-
-    setDate("modDataModifica", formattedM);
-    dataModificaPrecedente = document.querySelector('#modDataModifica').value;
+    dataOdierna = await setDate("modDataModifica", formattedM);
 
     getCategorie("modSelectCategoria","modCategoria");
     getUbicazione("modSelectUbicazione","modUbicazione");
@@ -862,16 +921,19 @@ const btnSave = document.getElementById('btnSalvaUpdate');
 document.getElementById("modDataModifica").addEventListener("input",checkDate);
 async function checkDate(){
     const dataInserimento = document.querySelector('#modData').value;
-    const dataModifica = document.querySelector('#modDataModifica').value;;
+    const dataModifica = document.querySelector('#modDataModifica').value;
     if(dataModifica < dataInserimento){
         document.getElementById("error").textContent = "La data modifica non può essere inferiore alla data inserimento";
         btnSave.disabled = true;
         btnSave.classList.add('modOpacity');
-    }
-    if(dataModifica < dataModificaPrecedente){
-        document.getElementById("error").textContent = "La data di modifica deve essere successiva o uguale alla precedente";
+    }else if(dataModifica > dataOdierna){
+        document.getElementById("error").textContent = "La data di modifica non puo essere superiore alla data odierna";
         btnSave.disabled = true;
         btnSave.classList.add('modOpacity');
+    }else if(dataModifica < formattedM){
+             document.getElementById("error").textContent = "La data di modifica deve essere successiva o uguale alla precedente";
+             btnSave.disabled = true;
+             btnSave.classList.add('modOpacity');
     }else{
         btnSave.disabled = false;
         btnSave.classList.remove('modOpacity');

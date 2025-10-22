@@ -73,10 +73,11 @@ public class MagazzinoController {
             @RequestParam(required = false) Integer minCosto,
             @RequestParam(required = false) Integer maxCosto,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "25") int size) {
+            @RequestParam(defaultValue = "25") int size,
+            @RequestParam(defaultValue = "DESC") String direzione) {
 
         try{
-            return magazzinoService.ricercaArticoli(nome, categoria, ubicazione, codice, da, a, daM, aM, min, max, minCosto, maxCosto,size,page * size, sortField);
+            return magazzinoService.ricercaArticoliEntity(nome, categoria, ubicazione, codice, da, a, daM, aM, min, max, minCosto, maxCosto,size,page * size, sortField,direzione);
 
         }catch (Exception e){
             throw new RuntimeException(e);

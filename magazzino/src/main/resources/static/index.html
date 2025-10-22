@@ -53,43 +53,41 @@
                 <input type="number" id="maxInput" placeholder="max Quantità" max="1000000000">
                 <input type="number" id="minCostoInput" placeholder="min Costo" min="0">
                 <input type="number" id="maxCostoInput" placeholder="max Costo" max="1000000000">
-                <select id="selectSort">
-                    <option value="richieste">Seleziona Ordinamento</option>
-                    <option value="nome">Nome</option>
-                    <option value="quantita">Quantita</option>
-                    <option value="costo">Costo</option>
-                </select>
                 <button type="submit">Cerca</button>
             </form>
         </div>
 
         <div class="tabella-container">
-            <label id="totRisultati"></label>
+            <div class="row">
+                <label id="totRisultati"></label>
+                <button class="reset" id="reset">reset filtri tabella</button>
+            </div>
+
             <table id="tabellaRicerca">
                 <colgroup>
-                    <col style="width: 20%;">
-                    <col style="width: 20%;">
                     <col style="width: 15%;">
                     <col style="width: 15%;">
-                    <col style="width: 5%;">
-                    <col style="width: 5%;">
-                    <col style="width: 5%;">
-                    <col style="width: 5%;">
-                    <col style="width: 5%;">
-                    <col style="width: 5%;">
+                    <col style="width: 10%;">
+                    <col style="width: 12%;">
+                    <col style="width: 8%;">
+                    <col style="width: 8%;">
+                    <col style="width: 8%;">
+                    <col style="width: 8%;">
+                    <col style="width: 8%;">
+                    <col style="width: 8%;">
                 </colgroup>
                 <thead>
                 <tr>
-                    <th>Nome</th>
-                    <th>Categoria</th>
-                    <th>Ubicazione</th>
-                    <th>Codice</th>
-                    <th>Quantità</th>
-                    <th>Costo</th>
-                    <th>(*)Unità</th>
-                    <th>Valore</th>
-                    <th>Inserimento</th>
-                    <th>Modifica</th>
+                    <th data-col="nome">Nome <span class="sort-indicator"></span> </th>
+                    <th data-col="categoria">Categoria <span class="sort-indicator"></span> </th>
+                    <th data-col="ubicazione">Ubicazione <span class="sort-indicator"></span> </th>
+                    <th data-col="codice">Codice <span class="sort-indicator"></span> </th>
+                    <th data-col="quantita">Quantità <span class="sort-indicator"></span> </th>
+                    <th data-col="costo">Costo <span class="sort-indicator"></span> </th>
+                    <th data-col="unita">(*)Unità <span class="sort-indicator"></span> </th>
+                    <th data-col="valore">Valore <span class="sort-indicator"></span> </th>
+                    <th data-col="inserimento">Inserimento <span class="sort-indicator"></span> </th>
+                    <th data-col="modifica">Modifica <span class="sort-indicator"></span> </th>
                 </tr>
                 </thead>
                 <tbody></tbody>

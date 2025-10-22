@@ -346,3 +346,24 @@ th {
   width: 100%;
   height: 40vh;
 }
+
+
+th {
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+}
+
+.sort-indicator {
+    font-size: 0.8em;
+    margin-left: 4px;
+    opacity: 0.6;
+}
+.reset{
+    padding: 2px;
+}
+
+th.active .sort-indicator {
+    opacity: 1;
+    color: #007bff;
+}
