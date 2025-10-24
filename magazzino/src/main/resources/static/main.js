@@ -1,5 +1,5 @@
 import { creaTabellaArticoli, createOptionMerce, createOptionCosto } from './gestioneMagazzino.js'
-import { creaTabellaCategoria, creaTabellaUbicazione, creaTabellaMerce } from './categorie.js'
+import { creaTabellaCategoria, creaTabellaUbicazione, creaTabellaMerce, creaTabellaValore } from './categorie.js'
 
 const API_BASE_URL = "/api/magazzino";
 
@@ -52,6 +52,7 @@ document.querySelectorAll('.nav-links a').forEach(link => {
         creaGrafico(anno);
         creaGraficoMerce(anno);
         creaTabellaMerce(await ricercaMerce(anno));
+        creaTabellaValore(await ricercaArticoliGraph(anno));
     }
   });
 });

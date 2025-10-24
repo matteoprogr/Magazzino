@@ -1,3 +1,4 @@
+import { setDataCosto } from './gestioneMagazzino.js'
 
 export function creaTabellaCategoria(data){
     const tBody = document.querySelector('#tabellaCategorie tbody');
@@ -91,13 +92,46 @@ export function creaTabellaMerce(data){
         tr.setAttribute('anno', me.anno);
         tr.innerHTML = `
             <td>${me.mese}</td>
-            <td>${me.entrata}</td>
-            <td>${me.uscita}</td>
+            <td>${me.entrata} (${me.valoreEntrate})</td>
+            <td>${me.uscita} (${me.valoreUscite})</td>
         `;
 
-       tr.addEventListener('click', () => {
-            tr.classList.toggle("selected");
-        });
+        tBody.appendChild(tr);
+    });
+}
+
+
+
+export function creaTabellaValore(data){
+
+    const valore = [];
+    const valoreMese = [];
+    setDataCosto(data, valore);
+    for(let i = 0; i < valore.length; i++){
+        const mese = {};
+        if(valore[i] !== undefined){
+            mese.mese = convertiMese(i + 1);
+            mese.valore = valore[i];
+        }
+        if(mese.valore !== undefined) valoreMese.push(mese);
+    }
+
+    const tBody = document.querySelector('#tabellaValore tbody');
+    tBody.innerHTML = '';
+
+    if(data.length === 0){
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="2">Nessun valore presente</td>`;
+        tBody.appendChild(tr);
+        return;
+    }
+
+    valoreMese.forEach(val => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${val.mese}</td>
+            <td>${val.valore}</td>
+        `;
 
         tBody.appendChild(tr);
     });

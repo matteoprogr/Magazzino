@@ -65,7 +65,6 @@ function setData(merce, entrata, uscita){
     });
     let primoIndice = entrata.findIndex(x => x !== undefined);
     const ultimoIndice = entrata.findLastIndex(x => x !== undefined);
-    if (primoIndice === ultimoIndice) primoIndice = -1;
     for(let i = primoIndice + 1; i < ultimoIndice; i++){
         if(entrata[i] === undefined){
             entrata[i] = 0;
@@ -148,7 +147,7 @@ export async function createOptionMerce(merce, merce2){
 }
 
 
-function setDataCosto(articoli, valore){
+export function setDataCosto(articoli, valore){
     articoli.forEach( item => {
     const data = item.dataModifica.split('-');
     const mese = data[1];

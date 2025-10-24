@@ -88,22 +88,6 @@ public class MagazzinoService {
         }
     }
 
-    public EntityResponseDto ricercaArticoli(String nome, String categoria, String ubicazione, String codice, String da, String a, String daM, String aM ,Integer min, Integer max, Integer minCosto, Integer maxCosto, int limit, int offset, String sortField){
-
-        if(sortField == null || sortField.isEmpty()){
-            sortField = "richieste";
-        }
-        if(limit == 0){
-            limit = Integer.MAX_VALUE;
-        }
-        List<Articolo> list = articoliRepository.searchArticoli(nome, capitalize(categoria), capitalize(ubicazione),codice, da, a, daM, aM, min, max, minCosto, maxCosto, limit, offset, sortField);
-        long count = articoliRepository.countArticoli(nome, capitalize(categoria), capitalize(ubicazione),codice, da, a, daM, aM, min, max, minCosto, maxCosto);
-        return EntityResponseDto.builder()
-                .entity(list)
-                .count(count)
-                .build();
-    }
-
     public EntityResponseDto ricercaArticoliEntity(String nome, String categoria, String ubicazione, String codice, String da, String a, String daM, String aM ,Integer min, Integer max, Integer minCosto, Integer maxCosto, int limit, int offset, String sortField, String direzione){
 
         if(sortField == null || sortField.isEmpty()){
@@ -184,13 +168,16 @@ public class MagazzinoService {
         if(richieste == 0){
             articolo.setRichieste(1);
             costoUnita = (double) dto.getCosto() / dto.getQuantita();
+            dto.setCostoUnita(costoUnita);
             saveMerce(dto);
         }else if(dto.isUpdatedQuantita()){
             articolo.setRichieste(richieste + 1);
-            updateMerce(dto);
             costoUnita = dto.getCostoUnita();
+            dto.setCostoUnita(costoUnita);
+            updateMerce(dto);
         }else if(dto.isUpdatedCosto()){
             costoUnita = (double) dto.getCosto() / dto.getQuantita();
+            articolo.setRichieste(richieste);
         }else{
             articolo.setRichieste(richieste);
             costoUnita = dto.getCostoUnita();
@@ -249,21 +236,16 @@ public class MagazzinoService {
         String [] data = dto.getDataInserimento().split("-");
         String idArticolo = dto.getIdArticolo();
         Merce merce = new Merce();
-        Merce merceEsistente = merceRepository.findByMeseAndAnnoAndIdArticolo(data[1],data[0],idArticolo);
         int entrata;
-        if(merceEsistente != null){
-            entrata = merceEsistente.getEntrata();
-            entrata += dto.getQuantita();
-            merceEsistente.setEntrata(entrata);
-            merceRepository.save(merceEsistente);
-        }else{
-            entrata = dto.getQuantita();
-            merce.setEntrata(entrata);
-            merce.setMese(data[1]);
-            merce.setAnno(data[0]);
-            merce.setIdArticolo(idArticolo);
-            merceRepository.save(merce);
-        }
+        double valoreEntrata;
+        entrata = dto.getQuantita();
+        valoreEntrata = (dto.getQuantita() * dto.getCostoUnita());
+        merce.setEntrata(entrata);
+        merce.setMese(data[1]);
+        merce.setAnno(data[0]);
+        merce.setIdArticolo(idArticolo);
+        merce.setValoreEntrate(valoreEntrata);
+        merceRepository.save(merce);
     }
 
     private void updateMerce(ArticoloDto dto){
@@ -286,25 +268,35 @@ public class MagazzinoService {
         Merce merceEsistente = merceRepository.findByMeseAndAnnoAndIdArticolo(mese,anno,idArticolo);
         int entrata;
         int uscita;
+        double valoreEntrata;
+        double valoreUscita;
         if(merceEsistente != null){
             if(diff < 0){
                 entrata = merceEsistente.getEntrata() + Math.abs(diff);
                 merceEsistente.setEntrata(entrata);
+                valoreEntrata = merceEsistente.getValoreEntrate() + (Math.abs(diff) * dto.getCostoUnita());
+                merceEsistente.setValoreEntrate(valoreEntrata);
             }
             if(diff > 0){
                 uscita = merceEsistente.getUscita() + diff;
                 merceEsistente.setUscita(uscita);
+                valoreUscita = merceEsistente.getValoreUscite() + (diff * dto.getCostoUnita());
+                merceEsistente.setValoreUscite(valoreUscita);
             }
             merceRepository.save(merceEsistente);
         }else{
             Merce merce = new Merce();
             if(diff < 0){
-                entrata = merce.getEntrata() + Math.abs(diff);
+                entrata = Math.abs(diff);
+                valoreEntrata = diff * dto.getCostoUnita();
                 merce.setEntrata(entrata);
+                merce.setValoreEntrate(valoreEntrata);
             }
             if(diff > 0){
-                uscita = merce.getUscita() + diff;
+                uscita = diff;
+                valoreUscita = diff * dto.getCostoUnita();
                 merce.setUscita(uscita);
+                merce.setValoreUscite(valoreUscita);
             }
             merce.setMese(mese);
             merce.setAnno(anno);
@@ -318,7 +310,7 @@ public class MagazzinoService {
         String cat = Normalizer.normalize(categoria, Normalizer.Form.NFD).substring(0,3).replaceAll("\\p{M}","");
         String ubi = Normalizer.normalize(ubicazione, Normalizer.Form.NFD).substring(0,3).replaceAll("\\p{M}","");
         String n = Normalizer.normalize(nome, Normalizer.Form.NFD).substring(0,3).replaceAll("\\p{M}","");
-        String codice = cat + "-" + ubi + "-" + n;
+        String codice = capitalize(cat) + capitalize(ubi) + capitalize(n);
         if(id == null){
             Integer lastId = articoliRepository.findLastId();
             if(lastId == null) lastId = 1;
@@ -328,7 +320,7 @@ public class MagazzinoService {
             codice = codice + "-" + "0" + id;
         }
 
-        return codice.toUpperCase();
+        return codice;
     }
 
     public String addCategoria(String categoria){
@@ -462,28 +454,41 @@ public class MagazzinoService {
         List<Merce> list = merceRepository.findByAnno(anno);
         Map<String, Integer> mapEntrata = new HashMap<>();
         Map<String, Integer> mapUscita = new HashMap<>();
+        Map<String, Double> mapEntrataValore = new HashMap<>();
+        Map<String, Double> mapUscitaValore = new HashMap<>();
         List<Merce> summedList = new ArrayList<>();
         for(Merce merce : list){
-            int valueEntrata = 0;
-            if(mapEntrata.get(merce.getMese()) != null){
-                valueEntrata = mapEntrata.get(merce.getMese());
+            int entrata = 0;
+            double valoreEntrata = 0.0;
+            String mese = merce.getMese();
+            if(mapEntrata.get(mese) != null){
+                entrata = mapEntrata.get(mese);
+                valoreEntrata = mapEntrataValore.get(mese);
             }
-            int sumEntrata = valueEntrata + merce.getEntrata();
-            mapEntrata.put(merce.getMese(), sumEntrata);
+            int sumEntrata = entrata + merce.getEntrata();
+            double sumValoreEntrata = valoreEntrata + merce.getValoreEntrate();
+            mapEntrata.put(mese, sumEntrata);
+            mapEntrataValore.put(mese, sumValoreEntrata);
 
-            int valueUscita = 0;
-            if(mapUscita.get(merce.getMese()) != null){
-                valueUscita = mapUscita.get(merce.getMese());
+            int uscita = 0;
+            double valoreUscita = 0.0;
+            if(mapUscita.get(mese) != null){
+                uscita = mapUscita.get(mese);
+                valoreUscita = mapUscitaValore.get(mese);
             }
-            int sumUscita = valueUscita + merce.getUscita();
-            mapUscita.put(merce.getMese(), sumUscita);
+            int sumUscita = uscita + merce.getUscita();
+            double sumValoreUscita = valoreUscita + merce.getValoreUscite();
+            mapUscita.put(mese, sumUscita);
+            mapUscitaValore.put(mese, sumValoreUscita);
         }
         for( Map.Entry<String, Integer> entrata : mapEntrata.entrySet()){
             Merce merce = new Merce();
             merce.setAnno(anno);
             merce.setMese(entrata.getKey());
             merce.setEntrata(entrata.getValue());
+            merce.setValoreEntrate(mapEntrataValore.get(entrata.getKey()));
             merce.setUscita(mapUscita.get(entrata.getKey()));
+            merce.setValoreUscite(mapUscitaValore.get(entrata.getKey()));
             summedList.add(merce);
         }
 

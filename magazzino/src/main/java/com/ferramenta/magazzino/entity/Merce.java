@@ -18,4 +18,6 @@ public class Merce {
     private String mese;
     private String anno;
     private String idArticolo;
+    private double valoreEntrate;
+    private double valoreUscite;
 }
