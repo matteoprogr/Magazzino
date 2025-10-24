@@ -53,6 +53,7 @@ document.querySelectorAll('.nav-links a').forEach(link => {
         creaGraficoMerce(anno);
         creaTabellaMerce(await ricercaMerce(anno));
         creaTabellaValore(await ricercaArticoliGraph(anno));
+        currentPageGr = anno;
     }
   });
 });
@@ -421,11 +422,10 @@ export async function ricercaArticoli(nome, codice, categoria, ubicazione, da, a
     }
 }
 
-export async function ricercaArticoliGraph(anno, direzione){
+export async function ricercaArticoliGraph(anno){
     try{
         const params = new URLSearchParams();
         if(anno) params.append("anno", anno);
-        if(direzione) params.append("direzione", direzione);
 
         const res = await fetch(`${API_BASE_URL}/ricercaGrafico?${params}`);
         const json = await res.json();
@@ -1091,7 +1091,7 @@ export function showToast(message,type, time = 3000) {
 async function creaGrafico(anno, anno2, direzione){
     const echarts = window.echarts;
     const chart = echarts.init(document.getElementById("chart"));
-    const data = await ricercaArticoliGraph(anno, direzione);
+    const data = await ricercaArticoliGraph(anno);
     let data2;
     anno2 = document.getElementById("compara").value;
     if(isValid(anno2) && anno !== parseInt(anno2)){

@@ -43,7 +43,7 @@ public class MagazzinoService {
         Articolo articolo = dtoToArticoloWithoutId(dto);
         articolo.setIdArticolo(idArticolo);
         articoliRepository.save(articolo);
-        isGraficoUpdated = false;
+        updatedValoreMagazzino();
     }
 
     @Transactional
@@ -64,7 +64,7 @@ public class MagazzinoService {
             articolo.setIdArticolo(dto.getIdArticolo());
             checkPrecedenteRecord(dto);
             articoliRepository.save(articolo);
-            isGraficoUpdated = false;
+            updatedValoreMagazzino();
         }catch (Exception e){
             log.error(e.getMessage());
             throw new RuntimeException(e);
@@ -106,51 +106,44 @@ public class MagazzinoService {
 
     public EntityResponseDto ricercaArticoliGrafico(String anno, String direzione){
 
-        if(!isGraficoUpdated) {
-            List<Articolo> list = articoliRepository.searchArticoloGraficoActive(anno);
-            if(direzione != null && !direzione.isEmpty()){
-                String anno2;
-                int annoInt = Integer.parseInt(anno);
-                annoInt = direzione.equals("avanti") ? annoInt - 1 : 0;
-                if(annoInt != 0){
-                    anno2 = String.valueOf(annoInt);
-                    list.addAll(articoliRepository.searchArticoloGraficoActive(anno2));
-                }
-            }
-
-            Map<String, LocalDate> mapDate = new HashMap<>();
-            Map<Integer, String> map = new HashMap<>();
-            Map<Integer, String> mapIdArticolo = new HashMap<>();
-            LocalDate lastMonth = LocalDate.now();
-            for (Articolo articolo : list) {
-                LocalDate dataModifica = LocalDate.parse(articolo.getDataModifica());
-                if (articolo.isActive()) {
-                    mapDate.put(articolo.getIdArticolo(), dataModifica);
-                    map.put(articolo.getId(), articolo.getDataModifica());
-                    mapIdArticolo.put(articolo.getId(), articolo.getIdArticolo());
-                }
-                if (dataModifica.isAfter(lastMonth)) {
-                    lastMonth = dataModifica;
-                }
-            }
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            String formattedModifica = lastMonth.plusMonths(1).format(formatter);
-            for (Map.Entry<Integer, String> item : map.entrySet()) {
-                Integer id = item.getKey();
-                ArticoloDto dto = new ArticoloDto();
-                dto.setDataInserimento(item.getValue());
-                dto.setDataModifica(formattedModifica);
-                dto.setId(id);
-                dto.setIdArticolo(mapIdArticolo.get(id));
-                checkPrecedenteRecord(dto);
-            }
-        }
-
         List<Articolo> lastUtilMonths = articoliRepository.searchArticoloGrafico(anno);
 
         return EntityResponseDto.builder().
                 entity(lastUtilMonths).
                 build();
+    }
+
+    private void updatedValoreMagazzino(){
+
+        List<Articolo> list = articoliRepository.searchArticoloGraficoActive();
+
+        Map<String, LocalDate> mapDate = new HashMap<>();
+        Map<Integer, String> map = new HashMap<>();
+        Map<Integer, String> mapIdArticolo = new HashMap<>();
+        LocalDate lastMonth = LocalDate.now();
+        for (Articolo articolo : list) {
+            LocalDate dataModifica = LocalDate.parse(articolo.getDataModifica());
+            if (articolo.isActive()) {
+                mapDate.put(articolo.getIdArticolo(), dataModifica);
+                map.put(articolo.getId(), articolo.getDataModifica());
+                mapIdArticolo.put(articolo.getId(), articolo.getIdArticolo());
+            }
+            if (dataModifica.isAfter(lastMonth)) {
+                lastMonth = dataModifica;
+            }
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String formattedModifica = lastMonth.plusMonths(1).format(formatter);
+        for (Map.Entry<Integer, String> item : map.entrySet()) {
+            Integer id = item.getKey();
+            ArticoloDto dto = new ArticoloDto();
+            dto.setDataInserimento(item.getValue());
+            dto.setDataModifica(formattedModifica);
+            dto.setId(id);
+            dto.setIdArticolo(mapIdArticolo.get(id));
+            checkPrecedenteRecord(dto);
+        }
+
     }
 
     private Articolo dtoToArticoloWithoutId(ArticoloDto dto){
@@ -213,7 +206,6 @@ public class MagazzinoService {
                 }
             }
         }
-        isGraficoUpdated = true;
     }
 
     private static Articolo getArticolo(String yearMonth, Articolo a, Integer id) {
@@ -221,6 +213,7 @@ public class MagazzinoService {
         articolo.setDataModifica(yearMonth + "-01");
         articolo.setDataInserimento(a.getDataInserimento());
         articolo.setCosto(a.getCosto());
+        articolo.setValore(a.getValore());
         articolo.setQuantita(a.getQuantita());
         articolo.setIdArticolo(a.getIdArticolo());
         articolo.setCostoUnita(a.getCostoUnita());

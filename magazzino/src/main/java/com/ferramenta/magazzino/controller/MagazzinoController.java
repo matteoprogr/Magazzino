@@ -85,11 +85,10 @@ public class MagazzinoController {
     }
     @GetMapping("/ricercaGrafico")
     public EntityResponseDto ricercaGrafico(
-            @RequestParam(required = true) String anno,
-            @RequestParam(required = false) String direzione) {
+            @RequestParam(required = true) String anno){
 
         try{
-            return magazzinoService.ricercaArticoliGrafico(anno, direzione);
+            return magazzinoService.ricercaArticoliGrafico(anno);
         }catch (Exception e){
             throw new RuntimeException(e);
         }

@@ -59,11 +59,8 @@ public interface ArticoliRepository  extends JpaRepository<Articolo, Long>, Arti
             SELECT * FROM articolo
             WHERE last_month_record = 1
              AND is_active = 1
-             AND strftime('%Y', data_modifica) = :anno
             """, nativeQuery = true)
-    List<Articolo> searchArticoloGraficoActive(
-            @Param("anno") String anno
-    );
+    List<Articolo> searchArticoloGraficoActive();
 
     @Query(value = """
             SELECT * FROM articolo
@@ -73,6 +70,7 @@ public interface ArticoliRepository  extends JpaRepository<Articolo, Long>, Arti
     List<Articolo> searchArticoloGrafico(
             @Param("anno") String anno
     );
+
 
     @Query(value = """
    SELECT COUNT(*) FROM articolo

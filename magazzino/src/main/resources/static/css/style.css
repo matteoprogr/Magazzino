@@ -88,12 +88,17 @@ th, td {
   text-align: left;
   font-size: 14px;
 }
+th{
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 100%;
+}
 
 td{
     white-space: normal;
     word-wrap: break-word;
     overflow-wrap: break-word;
-    text-overflow: ellipsis;
 }
 
 th {

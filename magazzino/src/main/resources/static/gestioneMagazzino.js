@@ -148,20 +148,23 @@ export async function createOptionMerce(merce, merce2){
 
 
 export function setDataCosto(articoli, valore){
-    articoli.forEach( item => {
-    const data = item.dataModifica.split('-');
-    const mese = data[1];
-    let index;
-    if(mese[0] === '0'){
-        index = parseInt(mese[1], 10) - 1;
-    }else{
-        index = parseInt(mese) - 1;
+    if(articoli !== undefined && articoli.length > 0){
+        articoli.forEach( item => {
+        const data = item.dataModifica.split('-');
+        const mese = data[1];
+        let index;
+        if(mese[0] === '0'){
+            index = parseInt(mese[1], 10) - 1;
+        }else{
+            index = parseInt(mese) - 1;
+        }
+        const val = valore[index] !== undefined ? valore[index]: 0;
+        const qcu = item.valore;
+        const totvalue = qcu + val;
+        valore[index] = Number(totvalue.toFixed(2));
+        });
     }
-    const val = valore[index] !== undefined ? valore[index]: 0;
-    const qcu = item.valore;
-    const totvalue = qcu + val;
-    valore[index] = Number(totvalue.toFixed(2));
-    });
+
 }
 
 export async function createOptionCosto(articoli, articoli2){

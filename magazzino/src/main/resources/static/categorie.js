@@ -92,8 +92,8 @@ export function creaTabellaMerce(data){
         tr.setAttribute('anno', me.anno);
         tr.innerHTML = `
             <td>${me.mese}</td>
-            <td>${me.entrata} (${me.valoreEntrate})</td>
-            <td>${me.uscita} (${me.valoreUscite})</td>
+            <td>${me.entrata} <br> (${me.valoreEntrate.toFixed(1)})</td>
+            <td>${me.uscita} <br> (${me.valoreUscite.toFixed(1)})</td>
         `;
 
         tBody.appendChild(tr);
