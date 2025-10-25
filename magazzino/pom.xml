@@ -83,14 +83,17 @@
 				<configuration>
 					<name>Magazzino</name>
 					<appVersion>1.0.0</appVersion>
-					<vendor>Ferramenta</vendor>
+					<vendor>matteoprogr</vendor>
 					<destination>target/dist</destination>
 					<input>target</input>
 					<mainJar>magazzino-1.0.0.jar</mainJar>
-					<mainClass>com.ferramenta.magazzino.MagazzinoApplication</mainClass>
+<!--					<mainClass>com.ferramenta.magazzino.MagazzinoApplication</mainClass>-->
 
 					<javaOptions>
 						<option>-Dfile.encoding=UTF-8</option>
+						<!-- Aggiungi questa opzione per eseguire il JAR Spring Boot -->
+						<option>-jar</option>
+						<option>$APPDIR/magazzino-1.0.0.jar</option>
 					</javaOptions>
 
 					<!-- Windows -->

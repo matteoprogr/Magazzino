@@ -17,9 +17,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                                       currentPage -1, pageSize, filtri.sortField, "DESC"));
 });
 
-// Chiudi l'applicazione quando si chiude il browser (senza conferma)
-window.addEventListener('beforeunload', function() {
-    navigator.sendBeacon('/api/shutdown');
+window.addEventListener('beforeunload', function(event) {
+    const navEntries = performance.getEntriesByType("navigation");
+    const navType = navEntries[0]?.type;
+
+    if (navType !== "reload" && navType !== "navigate") {
+        navigator.sendBeacon('/api/shutdown');
+    }
 });
 
 
@@ -56,18 +60,6 @@ document.querySelectorAll('.nav-links a').forEach(link => {
         creaTabellaValore(await ricercaArticoliGraph(anno));
         currentPageGr = anno;
     }
-//    if(target === "chiudi"){
-//        if (confirm('Sei sicuro di voler chiudere l\'applicazione?')) {
-//                fetch('/api/shutdown', {
-//                    method: 'POST'
-//                })
-//                .then(() => {
-//                    alert('Applicazione chiusa con successo!');
-//                    window.close(); // Chiude anche la finestra del browser
-//                })
-//                .catch(err => console.error('Errore durante la chiusura:', err));
-//            }
-//    }
   });
 });
 
@@ -792,6 +784,7 @@ prevBtnGr.addEventListener("click", async () => {
     creaGrafico(currentPageGr, null, "indietro");
     creaGraficoMerce(currentPageGr);
     creaTabellaMerce(await ricercaMerce(currentPageGr));
+    creaTabellaValore(await ricercaArticoliGraph(currentPageGr));
 });
 
 nextBtnGr.addEventListener("click", async () => {
@@ -800,6 +793,7 @@ nextBtnGr.addEventListener("click", async () => {
     creaGrafico(currentPageGr, null, "avanti");
     creaGraficoMerce(currentPageGr);
     creaTabellaMerce(await ricercaMerce(currentPageGr));
+    creaTabellaValore(await ricercaArticoliGraph(currentPageGr));
 });
 
 ////////  GET SELECTED ///////////
