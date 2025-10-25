@@ -87,7 +87,6 @@
 					<destination>target/dist</destination>
 					<input>target</input>
 					<mainJar>magazzino-1.0.0.jar</mainJar>
-<!--					<mainClass>com.ferramenta.magazzino.MagazzinoApplication</mainClass>-->
 
 					<javaOptions>
 						<option>-Dfile.encoding=UTF-8</option>

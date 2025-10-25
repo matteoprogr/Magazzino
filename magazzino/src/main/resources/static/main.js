@@ -17,15 +17,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                                       currentPage -1, pageSize, filtri.sortField, "DESC"));
 });
 
-window.addEventListener('beforeunload', function(event) {
-    const navEntries = performance.getEntriesByType("navigation");
-    const navType = navEntries[0]?.type;
-
-    if (navType !== "reload" && navType !== "navigate") {
-        navigator.sendBeacon('/api/shutdown');
-    }
-});
-
 
 // --- Gestione navigazione ---
 document.querySelectorAll('.nav-links a').forEach(link => {
@@ -59,6 +50,12 @@ document.querySelectorAll('.nav-links a').forEach(link => {
         creaTabellaMerce(await ricercaMerce(anno));
         creaTabellaValore(await ricercaArticoliGraph(anno));
         currentPageGr = anno;
+    }
+    if(target === "chiudi"){
+        navigator.sendBeacon('/api/shutdown');
+        setTimeout(() => {
+            window.close();
+        }, 100);
     }
   });
 });
