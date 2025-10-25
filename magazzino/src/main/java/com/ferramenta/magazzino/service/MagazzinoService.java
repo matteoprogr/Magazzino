@@ -22,7 +22,6 @@ public class MagazzinoService {
     private final CategoriaRepository categoriaRepository;
     private final UbicazioneRepository ubicazioneRepository;
     private final MerceRepository merceRepository;
-    private boolean isGraficoUpdated = false;
 
     public MagazzinoService(ArticoliRepository articoliRepository, CategoriaRepository categoriaRepository, UbicazioneRepository ubicazioneRepository, MerceRepository merceRepository) {
         this.articoliRepository = articoliRepository;
@@ -31,6 +30,19 @@ public class MagazzinoService {
         this.merceRepository = merceRepository;
     }
 
+
+    public void mockData(ArticoloDto dto){
+        dto.setCategoria(addCategoria(dto.getCategoria()));
+        dto.setUbicazione(addUbicazione(dto.getUbicazione()));
+        String idArticolo = UUID.randomUUID().toString();
+        dto.setDataInserimento(dto.getDataInserimento());
+        dto.setIdArticolo(idArticolo);
+        dto.setCodice(creaCodiceByNomeAndCategoriaAndUbicazione(dto.getNome(), dto.getCategoria(), dto.getUbicazione(), null));
+        Articolo articolo = dtoToArticoloWithoutId(dto);
+        articolo.setIdArticolo(idArticolo);
+        articoliRepository.save(articolo);
+        updatedValoreMagazzino();
+    }
 
     public void addArticolo(ArticoloDto dto){
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -104,7 +116,7 @@ public class MagazzinoService {
                 .build();
     }
 
-    public EntityResponseDto ricercaArticoliGrafico(String anno, String direzione){
+    public EntityResponseDto ricercaArticoliGrafico(String anno){
 
         List<Articolo> lastUtilMonths = articoliRepository.searchArticoloGrafico(anno);
 
@@ -143,7 +155,6 @@ public class MagazzinoService {
             dto.setIdArticolo(mapIdArticolo.get(id));
             checkPrecedenteRecord(dto);
         }
-
     }
 
     private Articolo dtoToArticoloWithoutId(ArticoloDto dto){
