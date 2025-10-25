@@ -87,17 +87,25 @@ async function getCategorie(elementId, inputCat){
 }
 
 async function setDateSearch(){
-const data_daModifica = document.getElementById("dataM_da");
-const data_aModifica = document.getElementById("dataM_a");
-const today = new Date();
-const formatted = today.toISOString().split('T')[0];
+    const data_daModifica = document.getElementById("dataM_da");
+    const data_aModifica = document.getElementById("dataM_a");
+    const today = new Date();
 
-const lastMonth = new Date(today);
-lastMonth.setMonth(lastMonth.getMonth() - 1);
-const formattedLast = lastMonth.toISOString().split('T')[0];
+    const formatLocalDate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
 
-data_daModifica.value = formattedLast;
-data_aModifica.value = formatted;
+    const formatted = formatLocalDate(today);
+
+    const lastMonth = new Date(today);
+    lastMonth.setMonth(lastMonth.getMonth() - 1);
+    const formattedLast = formatLocalDate(lastMonth);
+
+    data_daModifica.value = formattedLast;
+    data_aModifica.value = formatted;
 }
 
 async function getYear(){
