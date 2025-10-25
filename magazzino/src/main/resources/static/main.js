@@ -17,6 +17,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                                       currentPage -1, pageSize, filtri.sortField, "DESC"));
 });
 
+// Chiudi l'applicazione quando si chiude il browser (senza conferma)
+window.addEventListener('beforeunload', function() {
+    navigator.sendBeacon('/api/shutdown');
+});
+
 
 // --- Gestione navigazione ---
 document.querySelectorAll('.nav-links a').forEach(link => {
@@ -51,6 +56,18 @@ document.querySelectorAll('.nav-links a').forEach(link => {
         creaTabellaValore(await ricercaArticoliGraph(anno));
         currentPageGr = anno;
     }
+//    if(target === "chiudi"){
+//        if (confirm('Sei sicuro di voler chiudere l\'applicazione?')) {
+//                fetch('/api/shutdown', {
+//                    method: 'POST'
+//                })
+//                .then(() => {
+//                    alert('Applicazione chiusa con successo!');
+//                    window.close(); // Chiude anche la finestra del browser
+//                })
+//                .catch(err => console.error('Errore durante la chiusura:', err));
+//            }
+//    }
   });
 });
 

@@ -1,0 +1,32 @@
+package com.ferramenta.magazzino.controller;
+
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class ShutdownController implements ApplicationContextAware {
+
+    private ApplicationContext context;
+
+    @PostMapping("/api/shutdown")
+    public String shutdown() {
+        new Thread(() -> {
+            try {
+                Thread.sleep(1000);
+                ((ConfigurableApplicationContext) context).close();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }).start();
+        return "Applicazione in chiusura...";
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext ctx) throws BeansException {
+        this.context = ctx;
+    }
+}

@@ -3,6 +3,8 @@ app:
     path: ${user.home}/magazzino.db
 
 spring:
+  application:
+    name: Magazzino
   datasource:
     url: jdbc:sqlite:${app.database.path}
     driver-class-name: org.sqlite.JDBC
@@ -12,3 +14,12 @@ spring:
       ddl-auto: update
     show-sql: true
     database-platform: com.ferramenta.magazzino.config.SQLiteDialect
+
+server:
+  port: 8080
+  shutdown: graceful
+logging:
+  file:
+    name: ${user.home}/magazzino.log
+  level:
+    root: INFO

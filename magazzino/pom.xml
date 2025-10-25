@@ -73,6 +73,34 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.panteleyev</groupId>
+				<artifactId>jpackage-maven-plugin</artifactId>
+				<version>1.6.0</version>
+				<configuration>
+					<name>Magazzino</name>
+					<appVersion>1.0.0</appVersion>
+					<vendor>Ferramenta</vendor>
+					<destination>target/dist</destination>
+					<input>target</input>
+					<mainJar>magazzino-1.0.0.jar</mainJar>
+					<mainClass>com.ferramenta.magazzino.MagazzinoApplication</mainClass>
+
+					<javaOptions>
+						<option>-Dfile.encoding=UTF-8</option>
+					</javaOptions>
+
+					<!-- Windows -->
+					<type>MSI</type>
+					<winMenu>true</winMenu>
+					<winDirChooser>true</winDirChooser>
+					<winShortcut>true</winShortcut>
+					<winPerUserInstall>false</winPerUserInstall>
+
+					<!-- Icona (opzionale) -->
+					 <icon>src/main/resources/static/icon.ico</icon>
+				</configuration>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.11.0</version>
