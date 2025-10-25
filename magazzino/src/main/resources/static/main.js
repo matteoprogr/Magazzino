@@ -33,11 +33,7 @@ document.querySelectorAll('.nav-links a').forEach(link => {
         getUbicazione("selectUbicazione", "addUbicazione");
         getUbicazione("selectUbicazioneInput","ubicazioneInput");
         setDateSearch();
-        const filtri = await creaFiltri();
-        paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
-                                          filtri.da, filtri.a, filtri.daM, filtri.aM,
-                                          filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
-                                          currentPage -1, pageSize, filtri.sortField, "DESC"));
+        resetFiltri();
     }
     if(target === "gestione"){
         getCategorie("selectCategoriaSearch","categoriaSearch");
