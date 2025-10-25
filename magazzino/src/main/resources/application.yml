@@ -13,7 +13,7 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
-    database-platform: com.ferramenta.magazzino.config.SQLiteDialect
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
 
 server:
   port: 8080
