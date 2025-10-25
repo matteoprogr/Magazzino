@@ -31,19 +31,6 @@ public class MagazzinoService {
     }
 
 
-    public void mockData(ArticoloDto dto){
-        dto.setCategoria(addCategoria(dto.getCategoria()));
-        dto.setUbicazione(addUbicazione(dto.getUbicazione()));
-        String idArticolo = UUID.randomUUID().toString();
-        dto.setDataInserimento(dto.getDataInserimento());
-        dto.setIdArticolo(idArticolo);
-        dto.setCodice(creaCodiceByNomeAndCategoriaAndUbicazione(dto.getNome(), dto.getCategoria(), dto.getUbicazione(), null));
-        Articolo articolo = dtoToArticoloWithoutId(dto);
-        articolo.setIdArticolo(idArticolo);
-        articoliRepository.save(articolo);
-        updatedValoreMagazzino();
-    }
-
     public void addArticolo(ArticoloDto dto){
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         dto.setCategoria(addCategoria(dto.getCategoria()));

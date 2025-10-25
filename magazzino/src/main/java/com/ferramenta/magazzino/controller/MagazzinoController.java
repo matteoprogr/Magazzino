@@ -33,18 +33,6 @@ public class MagazzinoController {
         return new ResponseDto("Articolo aggiunto con successo", HttpStatus.OK);
     }
 
-    @PostMapping("/mock")
-    public ResponseDto mockData(@Valid @RequestBody ArticoloDto articoloDto){
-
-        try{
-            magazzinoService.mockData(articoloDto);
-        }catch (Exception e){
-            return new ResponseDto("Errore durante l'aggiunta dell'articolo", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return new ResponseDto("Articolo aggiunto con successo", HttpStatus.OK);
-    }
-
     @PutMapping("/update")
     public ResponseDto modificaArticolo(@Valid @RequestBody ArticoloDto articoloDto){
 
