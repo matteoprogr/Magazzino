@@ -32,6 +32,7 @@ public class MagazzinoService {
 
 
     public void addArticolo(ArticoloDto dto){
+        log.info("INIZIO - addArticolo");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         dto.setCategoria(addCategoria(dto.getCategoria()));
         dto.setUbicazione(addUbicazione(dto.getUbicazione()));
@@ -43,10 +44,12 @@ public class MagazzinoService {
         articolo.setIdArticolo(idArticolo);
         articoliRepository.save(articolo);
         updatedValoreMagazzino();
+        log.info("FINE - addArticolo");
     }
 
     @Transactional
     public void updateArticolo(ArticoloDto dto){
+        log.info("INIZIO - updateArticolo");
         try{
             dto.setCategoria(addCategoria(dto.getCategoria()));
             dto.setUbicazione(addUbicazione(dto.getUbicazione()));
@@ -61,13 +64,13 @@ public class MagazzinoService {
                 if(activeMod == 0){ throw new RuntimeException("Nessun record modificato per isActive"); }
             }
             articolo.setIdArticolo(dto.getIdArticolo());
-            checkPrecedenteRecord(dto);
             articoliRepository.save(articolo);
-            updatedValoreMagazzino();
+            if(dto.isUpdatedQuantita() || dto.isUpdatedCosto()){ updatedValoreMagazzino(); }
         }catch (Exception e){
             log.error(e.getMessage());
             throw new RuntimeException(e);
         }
+        log.info("FINE - updateArticolo");
     }
 
     private String getYearMonth(String dataCompleta){
@@ -76,6 +79,7 @@ public class MagazzinoService {
     }
 
     public void deleteArticolo(List<Integer> ids){
+        log.info("INIZIO - deleteArticolo");
         try{
             for(int id : ids){
                 Articolo articolo = articoliRepository.findById(id);
@@ -85,10 +89,11 @@ public class MagazzinoService {
             log.error(e.getMessage());
             throw new RuntimeException(e);
         }
+        log.info("FINE - deleteArticolo");
     }
 
     public EntityResponseDto ricercaArticoliEntity(String nome, String categoria, String ubicazione, String codice, String da, String a, String daM, String aM ,Integer min, Integer max, Integer minCosto, Integer maxCosto, int limit, int offset, String sortField, String direzione){
-
+        log.info("INIZIO - ricercaArticoliEntity");
         if(sortField == null || sortField.isEmpty()){
             sortField = "richieste";
         }
@@ -97,6 +102,7 @@ public class MagazzinoService {
         }
         List<Articolo> list = articoliRepository.searchArticoliEntity(nome, capitalize(categoria), capitalize(ubicazione),codice, da, a, daM, aM, min, max, minCosto, maxCosto, limit, offset, sortField, direzione);
         long count = articoliRepository.countArticoli(nome, capitalize(categoria), capitalize(ubicazione),codice, da, a, daM, aM, min, max, minCosto, maxCosto);
+        log.info("FINE - ricercaArticoliEntity - risultati: {}", count);
         return EntityResponseDto.builder()
                 .entity(list)
                 .count(count)
@@ -104,16 +110,16 @@ public class MagazzinoService {
     }
 
     public EntityResponseDto ricercaArticoliGrafico(String anno){
-
+        log.info("INIZIO - ricercaArticoliGrafico");
         List<Articolo> lastUtilMonths = articoliRepository.searchArticoloGrafico(anno);
-
+        log.info("FINE - ricercaArticoliGrafico - articoli trovati: {}", lastUtilMonths.size());
         return EntityResponseDto.builder().
                 entity(lastUtilMonths).
                 build();
     }
 
     private void updatedValoreMagazzino(){
-
+        log.info("INIZIO - updatedValoreMagazzino");
         List<Articolo> list = articoliRepository.searchArticoloGraficoActive();
 
         Map<String, LocalDate> mapDate = new HashMap<>();
@@ -142,9 +148,11 @@ public class MagazzinoService {
             dto.setIdArticolo(mapIdArticolo.get(id));
             checkPrecedenteRecord(dto);
         }
+        log.info("FINE - updatedValoreMagazzino");
     }
 
     private Articolo dtoToArticoloWithoutId(ArticoloDto dto){
+        log.info("INIZIO - dtoToArticoloWithoutId");
         Articolo articolo = new Articolo();
         articolo.setNome(capitalize(dto.getNome()));
         articolo.setCodice(dto.getCodice());
@@ -177,11 +185,13 @@ public class MagazzinoService {
         articolo.setValore(costoUnita * dto.getQuantita());
         articolo.setActive(true);
         articolo.setLastMonthRecord(true);
+        log.info("FINE - dtoToArticoloWithoutId");
         return articolo;
     }
 
 
     private void checkPrecedenteRecord(ArticoloDto dto){
+        log.info("INIZIO - checkPrecedenteRecord");
         LocalDate modifica = LocalDate.parse(getYearMonth(dto.getDataModifica()) + "-01");
         LocalDate initialValue = LocalDate.parse(dto.getDataInserimento());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -191,10 +201,12 @@ public class MagazzinoService {
             String yearMonth = getYearMonth(formatted);
             Articolo articolo = articoliRepository.getRecordByidArticolAndYearMonthAndCategoria(dto.getIdArticolo(), yearMonth, "valoreStoricoMerce");
             if(articolo == null){
+                log.info("Add dati valore magazzino per articolo: {}", dto.getNome());
                 Articolo a = articoliRepository.findById(dto.getId());
                 articolo = getArticolo(yearMonth, a, null);
                 articoliRepository.save(articolo);
             }else {
+                log.info("Update dati valore magazzino per articolo: {}", dto.getNome());
                 Articolo a = articoliRepository.findById(dto.getId());
                 String dataArticoloActive = a.getDataModifica().split("-")[1];
                 String dataArticoloStorico = articolo.getDataModifica().split("-")[1];
@@ -204,6 +216,7 @@ public class MagazzinoService {
                 }
             }
         }
+        log.info("FINE - checkPrecedenteRecord");
     }
 
     private static Articolo getArticolo(String yearMonth, Articolo a, Integer id) {
@@ -224,6 +237,7 @@ public class MagazzinoService {
 
 
     private void saveMerce(ArticoloDto dto){
+        log.info("INIZIO - saveMerce");
         String [] data = dto.getDataInserimento().split("-");
         String idArticolo = dto.getIdArticolo();
         Merce merce = new Merce();
@@ -237,9 +251,11 @@ public class MagazzinoService {
         merce.setIdArticolo(idArticolo);
         merce.setValoreEntrate(valoreEntrata);
         merceRepository.save(merce);
+        log.info("FINE - saveMerce");
     }
 
     private void updateMerce(ArticoloDto dto){
+        log.info("INIZIO - updateMerce");
         Articolo articolo = articoliRepository.findById(dto.getId());
         int diff = articolo.getQuantita() - dto.getQuantita();
         String mese;
@@ -294,10 +310,12 @@ public class MagazzinoService {
             merce.setIdArticolo(idArticolo);
             merceRepository.save(merce);
         }
+        log.info("FINE - updateMerce");
     }
 
 
     private String creaCodiceByNomeAndCategoriaAndUbicazione(String nome, String categoria, String ubicazione, Integer id){
+        log.info("INIZIO - creaCodiceByNomeAndCategoriaAndUbicazione");
         String cat = Normalizer.normalize(categoria, Normalizer.Form.NFD).substring(0,3).replaceAll("\\p{M}","");
         String ubi = Normalizer.normalize(ubicazione, Normalizer.Form.NFD).substring(0,3).replaceAll("\\p{M}","");
         String n = Normalizer.normalize(nome, Normalizer.Form.NFD).substring(0,3).replaceAll("\\p{M}","");
@@ -310,27 +328,31 @@ public class MagazzinoService {
         }else{
             codice = codice + "-" + "0" + id;
         }
-
+        log.info("FINE - creaCodiceByNomeAndCategoriaAndUbicazione");
         return codice;
     }
 
     public String addCategoria(String categoria){
+        log.info("INIZIO - addCategoria - nome categoria: {}", categoria);
         String capitalized = capitalize(categoria);
         if(categoriaRepository.findByNome(capitalized) == null){
             Categoria cat = new Categoria();
             cat.setNome(capitalized);
             categoriaRepository.save(cat);
         }
+        log.info("FINE - addCategoria - nome categoria: {}", capitalized);
         return capitalized;
     }
 
     public String addUbicazione(String ubicazione){
+        log.info("INIZIO - addUbicazione - nome ubicazione: {}", ubicazione);
         String capitalized = capitalize(ubicazione);
         if(ubicazioneRepository.findByNome(capitalized) == null){
             Ubicazione ub = new Ubicazione();
             ub.setNome(capitalized);
             ubicazioneRepository.save(ub);
         }
+        log.info("FINE - addUbicazione - nome ubicazione: {}", capitalized);
         return capitalized;
     }
 
@@ -346,16 +368,19 @@ public class MagazzinoService {
 
     @Transactional
     public void deleteCategorie(Map<String, Integer> articoli){
+        log.info("INIZIO - deleteCategorie - categorie da cancellare : {}", articoli);
         for(Map.Entry<String, Integer> art : articoli.entrySet()){
             Categoria categoria = new Categoria();
             categoria.setId(Integer.parseInt(String.valueOf(art.getValue())));
             categoriaRepository.delete(categoria);
             articoliRepository.updateCategoriainArticoli(art.getKey(), "Non categorizzato");
         }
+        log.info("FINE - deleteCategorie - categorie da cancellate : {}", articoli);
     }
 
     @Transactional
     public void updateCategoria(String oldCategoria, String newName){
+        log.info("INIZIO - updateCategoria - categoria da aggiornare : {} in {}", oldCategoria, newName);
         String newNameCap = capitalize(newName);
         String oldCap = capitalize(oldCategoria);
         if(categoriaRepository.findByNome(newNameCap) != null){
@@ -368,24 +393,28 @@ public class MagazzinoService {
         categoria.setNome(newNameCap);
         categoriaRepository.save(categoria);
         updateCategoriaInArticoli(oldCap, newNameCap);
+        log.info("FINE - updateCategoria - categoria aggiornata : {} in {}", oldCap, newNameCap);
     }
 
     public void updateCategoriaInArticoli(String oldCategoria, String newName){
+        log.info("INIZIO - updateCategoriaInArticoli");
         articoliRepository.updateCategoriainArticoli(oldCategoria, newName);
         List<Articolo> list = articoliRepository.findByCategoria(newName);
         for(Articolo art : list){
             art.setCodice(creaCodiceByNomeAndCategoriaAndUbicazione(art.getNome(), newName, art.getUbicazione(), art.getId()));
             articoliRepository.save(art);
         }
+        log.info("FINE - updateCategoriaInArticoli");
     }
 
     public EntityResponseDto getCategoria(String categoria, int limit, int offset){
+        log.info("INIZIO - getCategoria - filtro ricerca: {}", categoria);
         if(limit == 0){
             limit = Integer.MAX_VALUE;
         }
         List<Categoria> categorie = categoriaRepository.searchCategorie(categoria, limit, offset);
         long count = categoriaRepository.countCategorie(categoria);
-
+        log.info("FINE - getCategoria - risultati: {}", count);
         return EntityResponseDto.builder()
                 .entity(categorie)
                 .count(count)
@@ -395,16 +424,19 @@ public class MagazzinoService {
 
     @Transactional
     public void deleteUbicazione(Map<String, Integer> articoli){
+        log.info("INIZIO - deleteUbicazione - - ubicazioni da cancellare : {}", articoli);
         for(Map.Entry<String, Integer> art : articoli.entrySet()){
             Ubicazione ubicazione = new Ubicazione();
             ubicazione.setId(Integer.parseInt(String.valueOf(art.getValue())));
             ubicazioneRepository.delete(ubicazione);
             articoliRepository.updateUbicazioneinArticoli(art.getKey(), "Non ubicato");
         }
+        log.info("FINE - deleteUbicazione - - ubicazioni cancellate : {}", articoli);
     }
 
     @Transactional
     public void updateUbicazione(String oldUbicazione, String newName){
+        log.info("INIZIO - updateUbicazione - ubicazione da aggiornare : {} in {}", oldUbicazione, newName);
         String newNameCap = capitalize(newName);
         String oldCap = capitalize(oldUbicazione);
         if(ubicazioneRepository.findByNome(newNameCap) != null){
@@ -417,24 +449,28 @@ public class MagazzinoService {
         ubicazione.setNome(newNameCap);
         ubicazioneRepository.save(ubicazione);
         updateUbicazioneInArticoli(oldCap, newNameCap);
+        log.info("FINE - updateUbicazione - ubicazione aggiornata : {} in {}", oldCap, newNameCap);
     }
 
     public void updateUbicazioneInArticoli(String oldUbicazione, String newName){
+        log.info("INIZIO - updateUbicazioneInArticoli");
         articoliRepository.updateUbicazioneinArticoli(oldUbicazione, newName);
         List<Articolo> list = articoliRepository.findByCategoria(newName);
         for(Articolo art : list){
             art.setCodice(creaCodiceByNomeAndCategoriaAndUbicazione(art.getNome(), newName, art.getUbicazione(), art.getId()));
             articoliRepository.save(art);
         }
+        log.info("FINE - updateUbicazioneInArticoli");
     }
 
     public EntityResponseDto getUbicazione(String ubicazione, int limit, int offset){
+        log.info("INIZIO - getUbicazione - filtro ricerca: {}", ubicazione);
         if(limit == 0){
             limit = Integer.MAX_VALUE;
         }
         List<Ubicazione> ubicazioni = ubicazioneRepository.searchUbicazione(ubicazione, limit, offset);
         long count = ubicazioneRepository.countUbicazione(ubicazione);
-
+        log.info("FINE - getUbicazione - risultati: {}", count);
         return EntityResponseDto.builder()
                 .entity(ubicazioni)
                 .count(count)
@@ -442,6 +478,7 @@ public class MagazzinoService {
     }
 
     public EntityResponseDto ricercaMerce(String anno){
+        log.info("INIZIO - ricercaMerce - filtro ricerca: {}", anno);
         List<Merce> list = merceRepository.findByAnno(anno);
         Map<String, Integer> mapEntrata = new HashMap<>();
         Map<String, Integer> mapUscita = new HashMap<>();
@@ -482,7 +519,7 @@ public class MagazzinoService {
             merce.setValoreUscite(mapUscitaValore.get(entrata.getKey()));
             summedList.add(merce);
         }
-
+        log.info("FINE - ricercaMerce - risultati: {}", summedList.size());
         return EntityResponseDto.builder()
                 .entity(summedList)
                 .build();
