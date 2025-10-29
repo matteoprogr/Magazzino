@@ -28,10 +28,18 @@
                 <input type="text" id="addNome" placeholder="Nome">
                 <input type="text" id="addCategoria" placeholder="Categoria">
                 <select id="selectCategoria"></select>
+                <div class="row">
+                    <input type="text" id="addSottoCategoria" placeholder="Sotto Categoria" maxlength="30">
+                    <button id="btnAddStc"> + </button>
+                </div>
+                <select id="selectSottoCategoria">
+                    <option value="">Seleziona sotto categoria</option>
+                </select>
+                <div class="column" id="sottoCatDiv"></div>
                 <input type="text" id="addUbicazione" placeholder="Ubicazione">
                 <select id="selectUbicazione"></select>
                 <input type="number" id="addQuantita" placeholder="Quantità" max="1000000000">
-                <input type="number" id="addCosto" placeholder="Costo" max="1000000000">
+                <input type="number" id="addCosto" placeholder="Costo" max="1000000000" step="0.01">
                 <button type="submit">Aggiungi</button>
             </form>
             <h4>Ricerca Articoli</h4>
@@ -40,6 +48,10 @@
                 <input type="text" id="codiceInput" placeholder="Codice">
                 <input type="text" id="categoriaInput" placeholder="Categoria">
                 <select id="selectCategoriaInput"></select>
+                <select id="selectSottoCategoriaSearch">
+                    <option value="">Seleziona sotto categoria</option>
+                </select>
+                <div class="column" id="sottoCatDivSearch"></div>
                 <input type="text" id="ubicazioneInput" placeholder="Ubicazione">
                 <select id="selectUbicazioneInput"></select>
                 <label class="dataLabel">Da (inserimento)</label>
@@ -112,7 +124,7 @@
                         </div>
                         <div class="column">
                             <label for="modCodice" class="labelMod">Codice</label>
-                            <input type="text" id="modCodice" placeholder="Codice">
+                            <input type="text" id="modCodice" readonly>
                         </div>
                     </div>
 
@@ -122,11 +134,19 @@
                             <label for="modCategoria" class="labelMod">Categoria</label>
                             <input type="text" id="modCategoria" placeholder="Categoria">
                             <select id="modSelectCategoria"></select>
+                            <div class="row">
+                                <input type="text" id="addSottoCategoriaMod" placeholder="Sotto Categoria" maxlength="30">
+                                <button id="btnAddStcMod"> + </button>
+                            </div>
+                            <div class="column" id="sottoCatDivMod"></div>
                         </div>
                         <div class="column">
                             <label for="modUbicazione" class="labelMod">Ubicazione</label>
                             <input type="text" id="modUbicazione" placeholder="Ubicazione">
                             <select id="modSelectUbicazione"></select>
+                            <select id="selectSottoCategoriaMod">
+                                <option value="">Seleziona sotto categoria</option>
+                            </select>
                         </div>
                     </div>
                     <div class="row">
@@ -211,7 +231,12 @@
                     <div class="modal-content">
                         <h4>Modifica Categoria</h4>
                         <label id="errorAlreadyExists"></label>
-                        <input type="text" id="modNomeCat" placeholder="Nome">
+
+                            <div class="row">
+                                <input type="text" id="modNomeCat" placeholder="Nome">
+                                <button id="addStcMod">+</button>
+                            </div>
+                        <div id="listaCat" class="column"></div>
                         <div class="row buttons">
                             <button id="btnSalvaUpdateCat">Salva</button>
                             <button id="btnChiudiUpdateCat">Chiudi</button>

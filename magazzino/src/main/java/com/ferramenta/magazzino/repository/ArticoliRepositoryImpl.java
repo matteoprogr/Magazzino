@@ -19,6 +19,7 @@ public class ArticoliRepositoryImpl implements ArticoliRepositoryCustom {
     public List<Articolo> searchArticoliEntity(
             String nome,
             String categoria,
+            List<String> sottoCategorie,
             String ubicazione,
             String codice,
             String da,
@@ -34,12 +35,92 @@ public class ArticoliRepositoryImpl implements ArticoliRepositoryCustom {
             String orderBy,
             String direction
     ) {
-        StringBuilder sql = new StringBuilder("SELECT * FROM articolo WHERE is_active = 1");
+        Query query = creaQuery("SELECT * ",nome, categoria, sottoCategorie, ubicazione, codice, da, a, daM, aM,
+                minQuantita, maxQuantita, minCosto, maxCosto, limit, offset, orderBy, direction);
+
+        return query.getResultList();
+    }
+
+    @Override
+    public int countArticoliEntity(
+            String nome,
+            String categoria,
+            List<String> sottoCategorie,
+            String ubicazione,
+            String codice,
+            String da,
+            String a,
+            String daM,
+            String aM,
+            Integer minQuantita,
+            Integer maxQuantita,
+            Integer minCosto,
+            Integer maxCosto
+    ) {
+        Query query = creaQuery("SELECT COUNT(*) ",nome, categoria, sottoCategorie, ubicazione, codice, da, a, daM, aM,
+                minQuantita, maxQuantita, minCosto, maxCosto, Integer.MAX_VALUE, 0, null, null);
+
+        Object result = query.getSingleResult();
+
+        if (result instanceof Number number) {
+            return number.intValue();
+        } else {
+            return 0;
+        }
+    }
+
+    /**
+     * Metodo di sicurezza per evitare SQL injection sul nome colonna.
+     */
+    private String sanitizeColumn(String orderBy) {
+        return switch (orderBy.toLowerCase()) {
+            case "nome" -> "nome";
+            case "categoria" -> "categoria";
+            case "quantita" -> "quantita";
+            case "costo" -> "costo";
+            case "richieste" -> "richieste";
+            case "ubicazione" -> "ubicazione";
+            case "unita" -> "costo_unita";
+            case "valore" -> "valore";
+            case "inserimento" -> "data_inserimento";
+            case "modifica" -> "data_modifica";
+            case "codice" -> "codice";
+            default -> "id";
+        };
+    }
+
+    private Query creaQuery(String tipoRicerca,
+        String nome,
+        String categoria,
+        List<String> sottoCategorie,
+        String ubicazione,
+        String codice,
+        String da,
+        String a,
+        String daM,
+        String aM,
+        Integer minQuantita,
+        Integer maxQuantita,
+        Integer minCosto,
+        Integer maxCosto,
+        int limit,
+        int offset,
+        String orderBy,
+        String direction){
+
+        StringBuilder sql = new StringBuilder(tipoRicerca + "FROM articolo WHERE is_active = 1");
         List<String> conditions = new ArrayList<>();
 
-        // Costruisci dinamicamente i filtri solo se i parametri sono valorizzati
         if (nome != null && !nome.isEmpty()) conditions.add("LOWER(nome) LIKE LOWER(CONCAT('%', :nome, '%'))");
         if (categoria != null && !categoria.isEmpty()) conditions.add("LOWER(categoria) LIKE LOWER(CONCAT('%', :categoria, '%'))");
+        if (sottoCategorie != null && !sottoCategorie.isEmpty()) {
+            List<String> sottoCatConditions = new ArrayList<>();
+            for (int i = 0; i < sottoCategorie.size(); i++) {
+                sottoCatConditions.add("sotto_categorie LIKE '%' || :sottoCat" + i + " || '%'");
+            }
+            conditions.add("(" + String.join(" OR ", sottoCatConditions) + ")");
+        }
+
         if (ubicazione != null && !ubicazione.isEmpty()) conditions.add("LOWER(ubicazione) LIKE LOWER(CONCAT('%', :ubicazione, '%'))");
         if (codice != null && !codice.isEmpty()) conditions.add("LOWER(codice) LIKE LOWER(CONCAT('%', :codice, '%'))");
 
@@ -66,13 +147,26 @@ public class ArticoliRepositoryImpl implements ArticoliRepositoryCustom {
             sql.append("DESC".equalsIgnoreCase(direction) ? "DESC " : "ASC ");
         }
 
-        sql.append(" LIMIT :limit OFFSET :offset");
+        if(!tipoRicerca.contains("COUNT")){
+            sql.append(" LIMIT :limit OFFSET :offset");
+        }
 
-        Query query = entityManager.createNativeQuery(sql.toString(), Articolo.class);
+
+        Query query;
+        if(tipoRicerca.contains("COUNT")){
+            query = entityManager.createNativeQuery(sql.toString());
+        }else{
+            query = entityManager.createNativeQuery(sql.toString(), Articolo.class);
+        }
+
 
         // Imposta solo i parametri realmente presenti
         if (nome != null && !nome.isEmpty()) query.setParameter("nome", nome);
         if (categoria != null && !categoria.isEmpty()) query.setParameter("categoria", categoria);
+        for (int i = 0; i < sottoCategorie.size(); i++) {
+            query.setParameter("sottoCat" + i, sottoCategorie.get(i));
+        }
+
         if (ubicazione != null && !ubicazione.isEmpty()) query.setParameter("ubicazione", ubicazione);
         if (codice != null && !codice.isEmpty()) query.setParameter("codice", codice);
 
@@ -88,29 +182,12 @@ public class ArticoliRepositoryImpl implements ArticoliRepositoryCustom {
         if (daM != null && !daM.isEmpty()) query.setParameter("daM", daM);
         if (aM != null && !aM.isEmpty()) query.setParameter("aM", aM);
 
-        query.setParameter("limit", limit);
-        query.setParameter("offset", offset);
+        if(!tipoRicerca.contains("COUNT")){
+            query.setParameter("limit", limit);
+            query.setParameter("offset", offset);
+        }
 
-        return query.getResultList();
+        return query;
     }
 
-    /**
-     * Metodo di sicurezza per evitare SQL injection sul nome colonna.
-     */
-    private String sanitizeColumn(String orderBy) {
-        return switch (orderBy.toLowerCase()) {
-            case "nome" -> "nome";
-            case "categoria" -> "categoria";
-            case "quantita" -> "quantita";
-            case "costo" -> "costo";
-            case "richieste" -> "richieste";
-            case "ubicazione" -> "ubicazione";
-            case "unita" -> "costo_unita";
-            case "valore" -> "valore";
-            case "inserimento" -> "data_inserimento";
-            case "modifica" -> "data_modifica";
-            case "codice" -> "codice";
-            default -> "id";
-        };
-    }
 }

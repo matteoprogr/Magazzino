@@ -168,6 +168,10 @@ th {
     background: indianred;
 }
 
+.stcBtn{
+    background: indianred;
+}
+
 #updateBtn{
     background: orange;
 }
@@ -383,4 +387,31 @@ th {
 th.active .sort-indicator {
     opacity: 1;
     color: #007bff;
+}
+
+.cardStc{
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.cardLabel{
+    background: #e0e0e0;
+    border: 1px solid #ccc;
+    font-size: 0.85rem;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    flex-basis: 85%;
+    border-radius: 0.1rem;
+    padding: 0.2rem;
+}
+.cardBtn{
+    flex-basis: 15%;
+    background: #e0e0e0;
+    border: 1px solid #ccc;
+    font-size: 0.85rem;
+    padding: 0.2rem;
+    border-radius: 0.1rem;
 }

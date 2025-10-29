@@ -14,47 +14,6 @@ public interface ArticoliRepository  extends JpaRepository<Articolo, Long>, Arti
 
     Articolo findById(int id);
 
-
-    @Query(value = """
-   SELECT * FROM articolo
-   WHERE is_active = 1
-    AND(:nome IS NULL OR LOWER(nome) LIKE LOWER(CONCAT('%', :nome, '%')))
-    AND(:categoria IS NULL OR LOWER(categoria) LIKE(CONCAT('%', :categoria, '%')))
-    AND(:ubicazione IS NULL OR LOWER(ubicazione) LIKE(CONCAT('%', :ubicazione, '%')))
-    AND(:codice IS NULL OR LOWER(codice) LIKE(CONCAT('%', :codice, '%')))
-    AND((:minQuantita IS NULL OR quantita >= :minQuantita)
-    AND(:maxQuantita IS NULL OR quantita <= :maxQuantita))
-    AND((:minCosto IS NULL OR costo >= :minCosto)
-    AND(:maxCosto IS NULL OR costo <= :maxCosto))
-    AND ((:da IS NULL OR data_inserimento >= :da)
-    AND (:a IS NULL OR data_inserimento <= :a))
-    AND ((:daM IS NULL OR data_modifica >= :daM)
-    AND (:aM IS NULL OR data_modifica <= :aM))
-   ORDER BY
-    CASE WHEN :orderBy = 'richieste' THEN richieste END DESC,
-    CASE WHEN :orderBy = 'costo' THEN costo END DESC,
-    CASE WHEN :orderBy = 'quantita' THEN quantita END DESC,
-    CASE WHEN :orderBy = 'nome' THEN nome END ASC
-   LIMIT :limit OFFSET :offset
-   """, nativeQuery = true)
-    List<Articolo> searchArticoli(
-            @Param("nome") String nome,
-            @Param("categoria") String categoria,
-            @Param("ubicazione") String ubicazione,
-            @Param("codice") String codice,
-            @Param("da") String da,
-            @Param("a") String a,
-            @Param("daM") String daM,
-            @Param("aM") String aM,
-            @Param("minQuantita") Integer minQuantita,
-            @Param("maxQuantita") Integer maxQuantita,
-            @Param("minCosto") Integer minCosto,
-            @Param("maxCosto") Integer maxCosto,
-            @Param("limit") int limit,
-            @Param("offset") int offset,
-            @Param("orderBy") String orderBy
-    );
-
     @Query(value = """
             SELECT * FROM articolo
             WHERE last_month_record = 1
@@ -72,43 +31,18 @@ public interface ArticoliRepository  extends JpaRepository<Articolo, Long>, Arti
     );
 
 
-    @Query(value = """
-   SELECT COUNT(*) FROM articolo
-   WHERE is_active = 1
-    AND (:nome IS NULL OR LOWER(nome) LIKE LOWER(CONCAT('%', :nome, '%')))
-    AND(:categoria IS NULL OR LOWER(categoria) LIKE(CONCAT('%', :categoria, '%')))
-    AND(:ubicazione IS NULL OR LOWER(ubicazione) LIKE(CONCAT('%', :ubicazione, '%')))
-    AND(:codice IS NULL OR LOWER(codice) LIKE(CONCAT('%', :codice, '%')))
-    AND((:minQuantita IS NULL OR quantita >= :minQuantita)
-    AND(:maxQuantita IS NULL OR quantita <= :maxQuantita))
-    AND((:minCosto IS NULL OR costo >= :minCosto)
-    AND(:maxCosto IS NULL OR costo <= :maxCosto))
-    AND ((:da IS NULL OR data_inserimento >= :da)
-    AND (:a IS NULL OR data_inserimento <= :a))
-    AND ((:daM IS NULL OR data_modifica >= :daM)
-    AND (:aM IS NULL OR data_modifica <= :aM))
-   """, nativeQuery = true)
-    long countArticoli(
-            @Param("nome") String nome,
-            @Param("categoria") String categoria,
-            @Param("ubicazione") String ubicazione,
-            @Param("codice") String codice,
-            @Param("da") String da,
-            @Param("a") String a,
-            @Param("daM") String daM,
-            @Param("aM") String aM,
-            @Param("minQuantita") Integer minQuantita,
-            @Param("maxQuantita") Integer maxQuantita,
-            @Param("minCosto") Integer minCosto,
-            @Param("maxCosto") Integer maxCosto
-    );
-
-
     @Modifying
     @Query(value = "UPDATE articolo SET categoria = :newName WHERE categoria = :oldCategoria", nativeQuery = true)
     int updateCategoriainArticoli(
             @Param("oldCategoria") String oldCategoria,
             @Param("newName") String newName);
+
+    @Query(value = "SELECT * FROM articolo WHERE sotto_categorie LIKE '%' || :sottoCategoria || '%'",nativeQuery = true)
+    List<Articolo> findBySottoCategoria(@Param("sottoCategoria") String sottoCategoria);
+
+    @Modifying
+    @Query(value = "UPDATE articolo SET sotto_categorie = '[]' WHERE LOWER(categoria) = LOWER(:categoria)", nativeQuery = true)
+    int clearSottoCategoriainArticoli(@Param("categoria") String categoria);
 
 
     @Modifying
@@ -155,7 +89,6 @@ public interface ArticoliRepository  extends JpaRepository<Articolo, Long>, Arti
             @Param("idArticolo") String idArticolo,
             @Param("isActive") Boolean isActive
     );
-
 
 
     @Query(value = "SELECT id FROM Articolo ORDER BY id DESC LIMIT 1", nativeQuery = true)

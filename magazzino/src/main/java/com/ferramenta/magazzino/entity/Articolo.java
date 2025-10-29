@@ -1,7 +1,10 @@
 package com.ferramenta.magazzino.entity;
 
+import com.ferramenta.magazzino.config.StringListConverter;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.List;
 
 
 @Entity
@@ -20,9 +23,12 @@ public class Articolo {
     private double valore;
     private int richieste;
 
-    @Column(unique = true)
     private String codice;
     private String categoria;
+
+    @Convert(converter = StringListConverter.class)
+    @Column(name = "sotto_categorie")
+    private List<String> sottoCategorie;
     private String ubicazione;
 
     private String dataInserimento;

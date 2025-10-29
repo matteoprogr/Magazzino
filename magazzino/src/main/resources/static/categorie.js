@@ -11,11 +11,25 @@ export function creaTabellaCategoria(data){
         return;
     }
 
+
     data.forEach( cat => {
+        const stc = cat.sottoCategorie !== null ? cat.sottoCategorie : "";
+        let toStringStc = "";
+        if(stc !== "" && stc !== null && stc.length > 0){
+        toStringStc = "["
+        for(let i = 0; i < stc.length; i++){
+            if(i == 0){
+                toStringStc += " " + stc[i];
+            }else{
+                toStringStc += " - " + stc[i];
+            }
+        }
+        toStringStc += " ]";
+        }
         const tr = document.createElement('tr');
         tr.setAttribute('id', cat.id);
         tr.innerHTML = `
-            <td>${cat.nome}</td>
+            <td>${cat.nome} ${toStringStc}</td>
         `;
 
        tr.addEventListener('click', () => {
@@ -101,7 +115,6 @@ export function creaTabellaMerce(data){
 }
 
 
-
 export function creaTabellaValore(data){
 
     const valore = [];
@@ -135,4 +148,36 @@ export function creaTabellaValore(data){
 
         tBody.appendChild(tr);
     });
+}
+
+export async function creaComponentSottoCategoria(container, value){
+
+    const div = document.createElement('div');
+    div.classList.add("row");
+
+    const stcModInput = document.createElement('input');
+    stcModInput.type = 'text';
+    stcModInput.maxLength = 30;
+    stcModInput.placeholder = 'Sotto categoria';
+    stcModInput.value = value.toLowerCase().trim();
+    div.appendChild(stcModInput);
+
+    const stcModBtn = document.createElement('button');
+    stcModBtn.type = "button";
+    stcModBtn.innerText = "x";
+    stcModBtn.classList.add("stcBtn");
+    div.appendChild(stcModBtn);
+
+    stcModBtn.addEventListener('click', () =>{
+        const bool = stcModInput.disabled === true ? false : true;
+        stcModInput.disabled = bool;
+        if(bool){
+            stcModInput.classList.add("modOpacity");
+        }else{
+            stcModInput.classList.remove("modOpacity");
+        }
+
+    });
+
+    container.appendChild(div);
 }

@@ -18,9 +18,23 @@ export function creaTabellaArticoli(data){
         const data = `${d}/${m}/${y}`;
         const [yM, mM, dM] = a.dataModifica.split("-");
         const dataModifica = `${dM}/${mM}/${yM}`;
+        const stc = a.sottoCategorie !== null ? a.sottoCategorie : "";
+        let toStringStc = "";
+        if(stc !== "" && stc !== null && stc.length > 0){
+        toStringStc = "["
+        for(let i = 0; i < stc.length; i++){
+            if(i == 0){
+                toStringStc += " " + stc[i];
+            }else{
+                toStringStc += '<br>' + stc[i];
+            }
+        }
+        toStringStc += " ]";
+        }
+
         tr.innerHTML = `
             <td>${a.nome}</td>
-            <td>${a.categoria}</td>
+            <td>${a.categoria} <br> ${toStringStc}</td>
             <td>${a.ubicazione}</td>
             <td>${a.codice}</td>
             <td>${a.quantita}</td>

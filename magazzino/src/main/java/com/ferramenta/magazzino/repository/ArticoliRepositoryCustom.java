@@ -10,6 +10,7 @@ public interface ArticoliRepositoryCustom {
     List<Articolo> searchArticoliEntity(
             String nome,
             String categoria,
+            List<String> sottoCategorie,
             String ubicazione,
             String codice,
             String da,
@@ -24,5 +25,21 @@ public interface ArticoliRepositoryCustom {
             int offset,
             String orderBy,
             String direction
+    );
+
+    int countArticoliEntity(
+            String nome,
+            String categoria,
+            List<String> sottoCategorie,
+            String ubicazione,
+            String codice,
+            String da,
+            String a,
+            String daM,
+            String aM,
+            Integer minQuantita,
+            Integer maxQuantita,
+            Integer minCosto,
+            Integer maxCosto
     );
 }

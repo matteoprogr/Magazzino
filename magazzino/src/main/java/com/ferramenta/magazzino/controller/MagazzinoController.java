@@ -61,6 +61,7 @@ public class MagazzinoController {
     public EntityResponseDto ricerca(
             @RequestParam(required = false) String nome,
             @RequestParam(required = false) String categoria,
+            @RequestParam(required = false) List<String> sottoCategorie,
             @RequestParam(required = false) String ubicazione,
             @RequestParam(required = false) String codice,
             @RequestParam(required = false) String da,
@@ -77,7 +78,7 @@ public class MagazzinoController {
             @RequestParam(defaultValue = "DESC") String direzione) {
 
         try{
-            return magazzinoService.ricercaArticoliEntity(nome, categoria, ubicazione, codice, da, a, daM, aM, min, max, minCosto, maxCosto,size,page * size, sortField,direzione);
+            return magazzinoService.ricercaArticoliEntity(nome, categoria, sottoCategorie, ubicazione, codice, da, a, daM, aM, min, max, minCosto, maxCosto,size,page * size, sortField,direzione);
 
         }catch (Exception e){
             throw new RuntimeException(e);
@@ -97,10 +98,11 @@ public class MagazzinoController {
     @PutMapping("/updateCategoria")
     public ResponseDto modificaCategoria(
             @RequestParam String oldCategoria,
-            @RequestParam String newName){
+            @RequestParam String newName,
+            @RequestParam List<String> newStc){
 
         try{
-            magazzinoService.updateCategoria(oldCategoria, newName);
+            magazzinoService.updateCategoria(oldCategoria, newName, newStc);
         }catch (AlreadyExistsException e){
             return new ResponseDto(e.getMessage(), HttpStatus.BAD_REQUEST);
         }catch (Exception e){
@@ -122,6 +124,7 @@ public class MagazzinoController {
         return new ResponseDto("Categoria eliminata con successo", HttpStatus.OK);
     }
 
+
     @GetMapping("/ricercaCategorie")
     public EntityResponseDto ricercaCategorie(
             @RequestParam(required = false) String categoria,
@@ -139,7 +142,7 @@ public class MagazzinoController {
     public ResponseDto aggiungiCategoria(@Valid @RequestBody CategoriaDto dto){
 
         try{
-            magazzinoService.addCategoria(dto.getNome());
+            magazzinoService.addCategoria(dto.getNome(), dto.getSottoCategorie());
         }catch (Exception e){
             return new ResponseDto("Errore durante l'aggiunta della categoria", HttpStatus.INTERNAL_SERVER_ERROR);
         }

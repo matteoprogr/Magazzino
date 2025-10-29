@@ -34,7 +34,7 @@ public class MagazzinoService {
     public void addArticolo(ArticoloDto dto){
         log.info("INIZIO - addArticolo");
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        dto.setCategoria(addCategoria(dto.getCategoria()));
+        dto.setCategoria(addCategoria(dto.getCategoria(), dto.getSottoCategorie()));
         dto.setUbicazione(addUbicazione(dto.getUbicazione()));
         String idArticolo = UUID.randomUUID().toString();
         dto.setDataInserimento(LocalDate.now().format(formatter));
@@ -51,7 +51,7 @@ public class MagazzinoService {
     public void updateArticolo(ArticoloDto dto){
         log.info("INIZIO - updateArticolo");
         try{
-            dto.setCategoria(addCategoria(dto.getCategoria()));
+            dto.setCategoria(addCategoria(dto.getCategoria(), dto.getSottoCategorie()));
             dto.setUbicazione(addUbicazione(dto.getUbicazione()));
             dto.setCodice(creaCodiceByNomeAndCategoriaAndUbicazione(dto.getNome(), dto.getCategoria(), dto.getUbicazione(), dto.getId()));
             Articolo articolo = dtoToArticoloWithoutId(dto);
@@ -92,7 +92,7 @@ public class MagazzinoService {
         log.info("FINE - deleteArticolo");
     }
 
-    public EntityResponseDto ricercaArticoliEntity(String nome, String categoria, String ubicazione, String codice, String da, String a, String daM, String aM ,Integer min, Integer max, Integer minCosto, Integer maxCosto, int limit, int offset, String sortField, String direzione){
+    public EntityResponseDto ricercaArticoliEntity(String nome, String categoria, List<String> sottoCategorie,String ubicazione, String codice, String da, String a, String daM, String aM ,Integer min, Integer max, Integer minCosto, Integer maxCosto, int limit, int offset, String sortField, String direzione){
         log.info("INIZIO - ricercaArticoliEntity");
         if(sortField == null || sortField.isEmpty()){
             sortField = "richieste";
@@ -100,8 +100,8 @@ public class MagazzinoService {
         if(limit == 0){
             limit = Integer.MAX_VALUE;
         }
-        List<Articolo> list = articoliRepository.searchArticoliEntity(nome, capitalize(categoria), capitalize(ubicazione),codice, da, a, daM, aM, min, max, minCosto, maxCosto, limit, offset, sortField, direzione);
-        long count = articoliRepository.countArticoli(nome, capitalize(categoria), capitalize(ubicazione),codice, da, a, daM, aM, min, max, minCosto, maxCosto);
+        List<Articolo> list = articoliRepository.searchArticoliEntity(nome, capitalize(categoria), sottoCategorie, capitalize(ubicazione),codice, da, a, daM, aM, min, max, minCosto, maxCosto, limit, offset, sortField, direzione);
+        long count = articoliRepository.countArticoliEntity(nome, capitalize(categoria),sottoCategorie, capitalize(ubicazione),codice, da, a, daM, aM, min, max, minCosto, maxCosto);
         log.info("FINE - ricercaArticoliEntity - risultati: {}", count);
         return EntityResponseDto.builder()
                 .entity(list)
@@ -160,13 +160,15 @@ public class MagazzinoService {
         articolo.setQuantita(dto.getQuantita());
         articolo.setCosto(dto.getCosto());
         articolo.setCategoria(dto.getCategoria());
+        articolo.setSottoCategorie(dto.getSottoCategorie());
         articolo.setDataInserimento(dto.getDataInserimento());
         articolo.setDataModifica(dto.getDataModifica() != null ? dto.getDataModifica() : dto.getDataInserimento());
         double costoUnita;
         int richieste = dto.getRichieste();
         if(richieste == 0){
             articolo.setRichieste(1);
-            costoUnita = (double) dto.getCosto() / dto.getQuantita();
+            costoUnita = dto.getCosto() / dto.getQuantita();
+            if(Double.isNaN(costoUnita)) costoUnita = 0;
             dto.setCostoUnita(costoUnita);
             saveMerce(dto);
         }else if(dto.isUpdatedQuantita()){
@@ -175,7 +177,8 @@ public class MagazzinoService {
             dto.setCostoUnita(costoUnita);
             updateMerce(dto);
         }else if(dto.isUpdatedCosto()){
-            costoUnita = (double) dto.getCosto() / dto.getQuantita();
+            costoUnita = dto.getCosto() / dto.getQuantita();
+            if(Double.isNaN(costoUnita)) costoUnita = 0;
             articolo.setRichieste(richieste);
         }else{
             articolo.setRichieste(richieste);
@@ -332,12 +335,33 @@ public class MagazzinoService {
         return codice;
     }
 
-    public String addCategoria(String categoria){
+    public String addCategoria(String categoria, List<String> sottoCategorie){
         log.info("INIZIO - addCategoria - nome categoria: {}", categoria);
         String capitalized = capitalize(categoria);
-        if(categoriaRepository.findByNome(capitalized) == null){
+        Categoria categoriaEntity = categoriaRepository.findByNome(capitalized);
+        if(categoriaEntity != null){
+            List<String> listStc = categoriaEntity.getSottoCategorie();
+            boolean isNewStc = false;
+            if(listStc != null && !listStc.isEmpty()){
+                for(String stc : sottoCategorie){
+                    if(!listStc.contains(stc)){
+                        listStc.add(stc);
+                        isNewStc = true;
+                    }
+                }
+            }else if(sottoCategorie != null){
+                listStc = new ArrayList<>(sottoCategorie);
+                isNewStc = true;
+            }
+
+            if(isNewStc){
+                categoriaEntity.setSottoCategorie(listStc);
+                categoriaRepository.save(categoriaEntity);
+            }
+        } else{
             Categoria cat = new Categoria();
             cat.setNome(capitalized);
+            cat.setSottoCategorie(sottoCategorie);
             categoriaRepository.save(cat);
         }
         log.info("FINE - addCategoria - nome categoria: {}", capitalized);
@@ -374,28 +398,44 @@ public class MagazzinoService {
             categoria.setId(Integer.parseInt(String.valueOf(art.getValue())));
             categoriaRepository.delete(categoria);
             articoliRepository.updateCategoriainArticoli(art.getKey(), "Non categorizzato");
+            articoliRepository.clearSottoCategoriainArticoli("Non categorizzato");
         }
         log.info("FINE - deleteCategorie - categorie da cancellate : {}", articoli);
     }
 
+
     @Transactional
-    public void updateCategoria(String oldCategoria, String newName){
-        log.info("INIZIO - updateCategoria - categoria da aggiornare : {} in {}", oldCategoria, newName);
-        String newNameCap = capitalize(newName);
-        String oldCap = capitalize(oldCategoria);
-        if(categoriaRepository.findByNome(newNameCap) != null){
-            throw new AlreadyExistsException("Categoria già presente");
+    public void updateCategoria(String oldCategoria, String newName, List<String> newStc){
+
+        try{
+            log.info("INIZIO - updateCategoria - categoria da aggiornare : {} in {}", oldCategoria, newName);
+            String newNameCap = capitalize(newName);
+            String oldCap = capitalize(oldCategoria);
+            Categoria categoria = categoriaRepository.findByNome(oldCap);
+            List<String> oldStc = categoria.getSottoCategorie() != null ? categoria.getSottoCategorie() : new ArrayList<>();
+            if(newName != null && (newName.length() > 30 || newName.length() < 3)){
+                throw new AlreadyExistsException("Inserire almeno 3 caratteri e massimo 30");
+            }
+            List<String> updated = new ArrayList<>();
+            for(String stc : newStc){
+                if(!stc.contains("-deleted") && !updated.contains(stc)){
+                    updated.add(stc);
+                }
+            }
+
+            categoria.setNome(newNameCap);
+            categoria.setSottoCategorie(updated);
+            categoriaRepository.save(categoria);
+            updateCategoriaInArticoli(oldCap, newNameCap);
+            updateSottoCategoriaInArticoli(oldStc, newStc);
+            log.info("FINE - updateCategoria - categoria aggiornata : {} in {}", oldCap, newNameCap);
+        }catch (Exception e){
+            log.error(e.getMessage());
         }
-        if(newName != null && (newName.length() > 30 || newName.length() < 3)){
-            throw new AlreadyExistsException("Inserire almeno 3 caratteri e massimo 30");
-        }
-        Categoria categoria = categoriaRepository.findByNome(oldCap);
-        categoria.setNome(newNameCap);
-        categoriaRepository.save(categoria);
-        updateCategoriaInArticoli(oldCap, newNameCap);
-        log.info("FINE - updateCategoria - categoria aggiornata : {} in {}", oldCap, newNameCap);
+
     }
 
+    @Transactional
     public void updateCategoriaInArticoli(String oldCategoria, String newName){
         log.info("INIZIO - updateCategoriaInArticoli");
         articoliRepository.updateCategoriainArticoli(oldCategoria, newName);
@@ -405,6 +445,29 @@ public class MagazzinoService {
             articoliRepository.save(art);
         }
         log.info("FINE - updateCategoriaInArticoli");
+    }
+
+    @Transactional
+    public void updateSottoCategoriaInArticoli(List<String> oldStc, List<String> newStc){
+        log.info("INIZIO - updateSottoCategoriaInArticoli");
+        for(int i = 0; i < oldStc.size(); i++){
+            List<Articolo> arts = articoliRepository.findBySottoCategoria(oldStc.get(i));
+            for(Articolo art : arts){
+                List<String> updatedStc = new ArrayList<>();
+                for(int j = 0; j < art.getSottoCategorie().size(); j++){
+                    if(art.getSottoCategorie().get(j).equals(oldStc.get(i))){
+                        if(!newStc.get(i).contains("-deleted") && !updatedStc.contains(newStc.get(i))){
+                            updatedStc.add(newStc.get(i));
+                        }
+                    }else{
+                        updatedStc.add(art.getSottoCategorie().get(j));
+                    }
+                }
+                art.setSottoCategorie(updatedStc);
+                articoliRepository.save(art);
+            }
+        }
+        log.info("FINE - updateSottoCategoriaInArticoli");
     }
 
     public EntityResponseDto getCategoria(String categoria, int limit, int offset){

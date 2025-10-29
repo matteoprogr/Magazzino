@@ -1,17 +1,17 @@
 import { creaTabellaArticoli, createOptionMerce, createOptionCosto } from './gestioneMagazzino.js'
-import { creaTabellaCategoria, creaTabellaUbicazione, creaTabellaMerce, creaTabellaValore } from './categorie.js'
+import { creaTabellaCategoria, creaTabellaUbicazione, creaTabellaMerce, creaTabellaValore, creaComponentSottoCategoria } from './categorie.js'
 
 const API_BASE_URL = "/api/magazzino";
 
 document.addEventListener("DOMContentLoaded", async () => {
-    getCategorie("selectCategoria", "addCategoria");
-    getCategorie("selectCategoriaInput", "categoriaInput");
+    getCategorie("selectCategoria", "addCategoria", "sottoCatDiv","addSottoCategoria", "selectSottoCategoria");
+    getCategorie("selectCategoriaInput", "categoriaInput", "sottoCatDivSearch", null,"selectSottoCategoriaSearch");
     getUbicazione("selectUbicazione", "addUbicazione");
     getUbicazione("selectUbicazioneInput","ubicazioneInput");
     setDateSearch();
     configurazioneSortIndicator();
     const filtri = await creaFiltri();
-    paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
+    paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria,filtri.sottoCategorie, filtri.ubicazione,
                                       filtri.da, filtri.a, filtri.daM, filtri.aM,
                                       filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
                                       currentPage -1, pageSize, filtri.sortField, "DESC"));
@@ -28,8 +28,8 @@ document.querySelectorAll('.nav-links a').forEach(link => {
     if(target === "home"){
         form.reset();
         searchForm.reset();
-        getCategorie("selectCategoria", "addCategoria");
-        getCategorie("selectCategoriaInput", "categoriaInput");
+        getCategorie("selectCategoria", "addCategoria", "sottoCatDiv","addSottoCategoria", "selectSottoCategoria");
+        getCategorie("selectCategoriaInput", "categoriaInput", "sottoCatDivSearch", null,"selectSottoCategoriaSearch");
         getUbicazione("selectUbicazione", "addUbicazione");
         getUbicazione("selectUbicazioneInput","ubicazioneInput");
         setDateSearch();
@@ -68,7 +68,7 @@ async function setComparazione(){
     creaGraficoMerce(anno, annoComparato);
 }
 
-async function getCategorie(elementId, inputCat){
+async function getCategorie(elementId, inputCat, div, input, selectSottoCategoria, modCat){
     const select = document.getElementById(elementId);
     const categorie = await ricercaCategorieSelect(null, 0, 0);
     select.innerHTML = '<option value=""> Seleziona Categoria </option>';
@@ -80,9 +80,49 @@ async function getCategorie(elementId, inputCat){
         select.appendChild(option);
     });
 
-    select.addEventListener("change", (e) => {
+    if(modCat !== null && modCat !== undefined){
+        setOption(div, input, selectSottoCategoria, modCat, null, inputCat);
+    }
+
+    select.addEventListener("change", async (e) => {
+        setOption(div, input, selectSottoCategoria,null, e, inputCat);
+    });
+}
+
+async function setOption(div, input, selectSottoCategoria, modCat, e, inputCat){
+    let value;
+    if(e !== null && e !== undefined){
+        value = e.target.value;
+    }else{
+        value = modCat;
+    }
+
+    document.getElementById(inputCat).value = value;
+    let cat = await ricercaCategorieSelect(value);
+    let stc = cat[0].sottoCategorie;
+    if(value !== ""){
+        cat = await ricercaCategorieSelect(value);
+        stc = cat[0].sottoCategorie;
+    }else{
+        stc = [];
+    }
+
+    const selectStc = document.getElementById(selectSottoCategoria);
+    selectStc.innerHTML = "";
+    selectStc.innerHTML = '<option value=""> Seleziona sotto categoria</option>';
+    if(stc !== null && stc.length > 0){
+        stc.forEach(s => {
+            const option = document.createElement("option");
+            option.value = s;
+            option.innerText = s;
+            selectStc.appendChild(option);
+        });
+    }
+
+    if(modCat === null) document.getElementById(div).innerHTML = "";
+    selectStc.addEventListener("change", async (e) =>{
         const value = e.target.value;
-        document.getElementById(inputCat).value = value;
+        if(value.trim() !== "") addSottoCategoria(value, div, input);
     });
 }
 
@@ -152,12 +192,19 @@ async function creaFiltri(){
       sortField = activeHeader.dataset.col;
       direzione = activeHeader.querySelector('.sort-indicator').textContent === '▲' ? 'ASC' : 'DESC';
     }
-
+    const stc = document.getElementById("sottoCatDivSearch").querySelectorAll(".cardLabel");
+    const sot = [];
+    if(stc.length > 0){
+        stc.forEach( s =>{
+            sot.push(s.innerText);
+        });
+    }
 
     const filtri = {
         nome: nomeInput !== "" ? nomeInput : null,
         codice: codiceInput !== "" ? codiceInput : null,
         categoria: categoriaInput !== "" ? categoriaInput : null,
+        sottoCategorie: sot,
         ubicazione: ubicazioneInput !== "" ? ubicazioneInput : null,
         da: dataDaInput !== "" ? dataDaInput : null,
         a: dataAInput !== "" ? dataAInput : null,
@@ -182,7 +229,7 @@ async function resetFiltri(){
         indicator.textContent = '▲';
     });
     const filtri = await creaFiltri();
-    paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
+    paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria,filtri.sottoCategorie, filtri.ubicazione,
                                           filtri.da, filtri.a, filtri.daM, filtri.aM,
                                           filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
                                           currentPage -1, pageSize, filtri.sortField, filtri.direzione));
@@ -201,7 +248,7 @@ async function configurazioneSortIndicator(){
             currentSort = {col,dir};
             updateSortIndicators(headers, currentSort);
             const filtri = await creaFiltri();
-            paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
+            paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria,filtri.sottoCategorie, filtri.ubicazione,
                                                   filtri.da, filtri.a, filtri.daM, filtri.aM,
                                                   filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
                                                   currentPage -1, pageSize, filtri.sortField, filtri.direzione));
@@ -240,7 +287,7 @@ const searchForm = document.getElementById("ricercaForm");
 searchForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const filtri = await creaFiltri();
-    paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
+    paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.sottoCategorie, filtri.ubicazione,
                                       filtri.da, filtri.a, filtri.daM, filtri.aM,
                                       filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
                                       currentPage -1, pageSize, filtri.sortField, filtri.direzione));
@@ -263,37 +310,94 @@ searchUbicazioneForm.addEventListener("submit", async (e) => {
     paginazioneUb(await ricercaUbicazioni(filtri.nome, currentPageUb -1, pageSizeUb));
 });
 
+document.getElementById("btnAddStc").addEventListener('click', (e) => {
+   e.preventDefault();
+   addSottoCategoria(null, "sottoCatDiv", "addSottoCategoria");
+});
+
+document.getElementById("btnAddStcMod").addEventListener('click', (e) => {
+   e.preventDefault();
+   addSottoCategoria(null, "sottoCatDivMod", "addSottoCategoriaMod");
+});
+
+async function addSottoCategoria(value, div, input){
+    let stcValue;
+    let stc;
+    if(value == null){
+        stc = document.getElementById(input);
+        stcValue = stc.value.toLowerCase();;
+    }else{
+        stcValue = value.toLowerCase();;
+    }
+
+    const sottoCatDiv = document.getElementById(div);
+    const elements = sottoCatDiv.querySelectorAll(".cardLabel");
+    let exist = false;
+    elements.forEach(el =>{
+        if(el.innerText === stcValue){ exist = true; }
+    });
+    if(exist){
+        stc.value = "";
+        return;
+    }
+    const length = elements.length;
+    const container = document.createElement("div");
+       container.innerHTML = `
+         <div class="cardStc">
+           <span class="cardLabel">${stcValue}</span>
+           <button type="button" id="${length}" class="cardBtn">x</button>
+         </div>
+       `;
+       sottoCatDiv.appendChild(container);
+       if(value == null) stc.value = "";
+       document.getElementById(length).addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          container.remove();
+          return false;
+        });
+}
+
 
 /////// ADD FORM //////////////////////
 const form = document.getElementById("addForm");
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    const sottoList = [];
+    const sottoCat = document.querySelectorAll(".cardLabel");
+    sottoCat.forEach(stc =>{
+        const sottoCategoria = stc.innerText;
+        sottoList.push(sottoCategoria);
+    });
     try{
         const articolo = {
             nome: document.getElementById("addNome").value.trim(),
             categoria: document.getElementById("addCategoria").value.trim(),
+            sottoCategorie: sottoList,
             ubicazione: document.getElementById("addUbicazione").value.trim(),
             quantita: parseInt(document.getElementById("addQuantita").value),
-            costo: parseInt(document.getElementById("addCosto").value)
+            costo: parseFloat(document.getElementById("addCosto").value)
         }
         const res = await aggiungiArticolo(articolo);
         console.log(res.messaggio);
         const filtri = await creaFiltri();
-        paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
+        paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.sottoCategorie, filtri.ubicazione,
                                           filtri.da, filtri.a, filtri.daM, filtri.aM,
                                           filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
                                           currentPage -1, pageSize, filtri.sortField, filtri.direzione));
 
-        getCategorie("selectCategoria", "addCategoria");
-        getCategorie("selectCategoriaInput", "categoriaInput");
+        getCategorie("selectCategoria", "addCategoria", "sottoCatDiv","addSottoCategoria", "selectSottoCategoria");
+        getCategorie("selectCategoriaInput", "categoriaInput", "sottoCatDivSearch", null,"selectSottoCategoriaSearch");
         getUbicazione("modSelectUbicazione","modUbicazione");
         getUbicazione("selectUbicazioneInput","ubicazioneInput");
     }catch (err){
         const msg = err.message
         console.error("Errore nel salvataggio", msg);
         showToast(msg ,"warning", 5000);
+        return;
     }
         form.reset();
+        document.getElementById("sottoCatDiv").innerHTML = "";
 });
 
 const addCategoriaForm = document.getElementById("addCategoriaForm");
@@ -397,7 +501,7 @@ export async function aggiungiUbicazione(ubicazioneDto){
 
 
 ///////////////// RICERCA ///////////////////////
-export async function ricercaArticoli(nome, codice, categoria, ubicazione, da, a, daM, aM, min, max, minCosto, maxCosto,
+export async function ricercaArticoli(nome, codice, categoria, sottoCategorie, ubicazione, da, a, daM, aM, min, max, minCosto, maxCosto,
                                       page = 0, size = 25, sortField, direzione = "DESC"){
     try{
         const labelRisultati = document.getElementById("totRisultati");
@@ -405,6 +509,7 @@ export async function ricercaArticoli(nome, codice, categoria, ubicazione, da, a
         if(nome) params.append("nome", nome);
         if(codice) params.append("codice", codice);
         if(categoria) params.append("categoria", categoria);
+        if(sottoCategorie) params.append("sottoCategorie", sottoCategorie);
         if(ubicazione) params.append("ubicazione", ubicazione);
         if(da) params.append("da", da);
         if(a) params.append("a", a);
@@ -553,7 +658,7 @@ async function deleteArticoli(ids){
         throw new Error(data.message || 'Errore durante il delete');
     }
     const filtri = await creaFiltri();
-    paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
+    paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria,filtri.sottoCategorie, filtri.ubicazione,
                                       filtri.da, filtri.a, filtri.daM, filtri.aM,
                                       filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
                                       currentPage -1, pageSize, filtri.sortField, filtri.direzione));
@@ -621,7 +726,7 @@ async function updateArticolo(dto){
         }
         console.log(data.messaggio);
         const filtri = await creaFiltri();
-        paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
+        paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.sottoCategorie, filtri.ubicazione,
                                           filtri.da, filtri.a, filtri.daM, filtri.aM,
                                           filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
                                           currentPage -1, pageSize, filtri.sortField, filtri.direzione));
@@ -631,11 +736,12 @@ async function updateArticolo(dto){
     }
 }
 
-async function updateCategoria(oldCategoria, newName){
+async function updateCategoria(oldCategoria, newName, newStc){
     try{
        const params = new URLSearchParams();
        params.append('oldCategoria', oldCategoria);
        params.append('newName', newName);
+       params.append('newStc', newStc);
        const response = await fetch(`${API_BASE_URL}/updateCategoria?${params}`, {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'}
@@ -700,7 +806,7 @@ prevBtn.addEventListener("click", async () => {
     if(currentPage > 0) {
         currentPage--;
         const filtri = await creaFiltri();
-        paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
+        paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.sottoCategorie, filtri.ubicazione,
                                           filtri.da, filtri.a, filtri.daM, filtri.aM,
                                           filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
                                           currentPage -1, pageSize, filtri.sortField, filtri.direzione));
@@ -710,7 +816,7 @@ prevBtn.addEventListener("click", async () => {
 nextBtn.addEventListener("click", async () => {
     currentPage++;
     const filtri = await creaFiltri();
-    paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.ubicazione,
+    paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.sottoCategorie, filtri.ubicazione,
                                       filtri.da, filtri.a, filtri.daM, filtri.aM,
                                       filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
                                       currentPage -1, pageSize, filtri.sortField, filtri.direzione));
@@ -831,7 +937,8 @@ export async function deleteCategorieChecked(){
 
     const ids = {};
     righe.forEach(riga =>{
-        ids[riga.textContent.trim()] = parseInt(riga.id);
+        const cat = riga.innerText.split("[")[0].trim();
+        ids[cat] = parseInt(riga.id);
     });
     await deleteCategoria(ids);
     getCategorie("selectCategoriaSearch","categoriaSearch");
@@ -894,7 +1001,12 @@ async function updateArticoliChecked(){
     const richieste = rigaSelected[0].getAttribute("richieste");
     const idArticolo = rigaSelected[0].getAttribute("idArticolo");
     const nome = celle[0].innerText;
-    const categoria = celle[1].innerText;
+    const elementsCat = celle[1].innerText.split("[");
+    const categoria = elementsCat[0].trim();
+    const stcs = elementsCat[1].replaceAll("]","").trim().split("\n");
+    stcs.forEach(stc =>{
+        addSottoCategoria(stc, "sottoCatDivMod", null)
+    });
     const ubicazione = celle[2].innerText;
     const codice = celle[3].innerText;
     quantita = celle[4].innerText;
@@ -917,7 +1029,7 @@ async function updateArticoliChecked(){
     document.querySelector('#modData').value = formatted;
     dataOdierna = await setDate("modDataModifica", formattedM);
 
-    getCategorie("modSelectCategoria","modCategoria");
+    getCategorie("modSelectCategoria","modCategoria", "sottoCatDivMod","addSottoCategoriaMod", "selectSottoCategoriaMod", categoria);
     getUbicazione("modSelectUbicazione","modUbicazione");
 
     document.querySelector('#modaleUpdate').dataset.id = id;
@@ -960,6 +1072,12 @@ document.querySelector('#btnSalvaUpdate').addEventListener('click', async () =>{
     const idArticolo = document.querySelector('#modaleUpdate').dataset.idArticolo;
     const quantitaMod = Number(document.querySelector('#modQuantita').value);
     const costoMod = Number(document.querySelector('#modCosto').value);
+    const sottoList = [];
+    const sottoCat = document.querySelectorAll(".cardLabel");
+    sottoCat.forEach(stc =>{
+        const sottoCategoria = stc.innerText;
+        sottoList.push(sottoCategoria);
+    });
 
     let updatedQuantita = false;
     if(Number(quantita) !== quantitaMod){
@@ -974,8 +1092,8 @@ document.querySelector('#btnSalvaUpdate').addEventListener('click', async () =>{
         id: id,
         nome: document.querySelector('#modNome').value,
         categoria: document.querySelector('#modCategoria').value,
+        sottoCategorie: sottoList,
         ubicazione: document.querySelector('#modUbicazione').value,
-        codice: document.querySelector('#modCodice').value,
         quantita: quantitaMod,
         costo: Number(document.querySelector('#modCosto').value),
         dataInserimento: document.querySelector('#modData').value,
@@ -999,6 +1117,10 @@ document.querySelector('#btnSalvaUpdate').addEventListener('click', async () =>{
 });
 
 document.getElementById("updateBtnCat").addEventListener('click', updateCategoriaChecked);
+const lista = document.querySelector('#listaCat');
+const addBtn = document.getElementById('addStcMod');
+let cat;
+addBtn.addEventListener('click', () => { creaComponentSottoCategoria(lista, ""); });
 async function updateCategoriaChecked(){
     const table = document.querySelector('#tabellaCategorie tbody');
     const rigaSelected = table.querySelectorAll('tr.selected');
@@ -1012,22 +1134,45 @@ async function updateCategoriaChecked(){
     showToast("Seleziona solo una riga", "warning");
     return;
     }
+    const modCatNome = document.querySelector('#modNomeCat');
 
+    lista.innerHTML = "";
     document.getElementById("errorAlreadyExists").innerText = "";
     const celle = rigaSelected[0].querySelectorAll('td');
-    const nome = celle[0].innerText;
+    const nome = celle[0].innerText.split("[");
+    cat = nome[0].trim();
+    const oldSottoCategorie = [];
+    if(nome.length > 1){
+        const sottoCat = nome[1].split('-');
+        for(let i = 0; i < sottoCat.length; i++ ){
+            const value = sottoCat[i].replaceAll("]","").toLowerCase().trim();
+            oldSottoCategorie.push(value);
+            creaComponentSottoCategoria(lista, value);
+        }
+    }
 
-    document.querySelector('#modNomeCat').value = nome;
+    modCatNome.value = cat;
     document.querySelector('#modaleUpdateCat').classList.remove('hidden');
 
     document.querySelector('#btnChiudiUpdateCat').addEventListener('click', () => {
         document.querySelector('#modaleUpdateCat').classList.add('hidden');
     });
+}
 
     document.querySelector('#btnSalvaUpdateCat').addEventListener('click', async () =>{
         try{
             const newName = document.querySelector('#modNomeCat').value;
-            const response = await updateCategoria(nome, newName);
+            const newLista = document.querySelector('#listaCat');
+            const newComp = newLista.querySelectorAll(".row");
+            const newSottoCategorie = [];
+            for(let i = 0; i < newComp.length; i++){
+                const el = newComp[i].children[0];
+                if(el.disabled && !el.value.includes("-deleted")){
+                    el.value += "-deleted";
+                }
+                newSottoCategorie.push(el.value.toLowerCase().trim());
+            }
+            const response = await updateCategoria(cat, newName, newSottoCategorie);
 
             if(response.status != "BAD_REQUEST"){
                 document.querySelector('#modaleUpdateCat').classList.add('hidden');
@@ -1040,7 +1185,6 @@ async function updateCategoriaChecked(){
             console.error(err);
         }
     });
-}
 
 document.getElementById("updateBtnUb").addEventListener('click', updateUbicazioneChecked);
 async function updateUbicazioneChecked(){
