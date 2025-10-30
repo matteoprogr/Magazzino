@@ -15,7 +15,7 @@ public class ArticoloDto {
     private String idArticolo;
 
     @NotBlank(message = "il nome non puo essere vuoto")
-    @Size(min  = 3, max = 50, message = "Il nome deve avere almeno 3 caratteri e massimo 50")
+    @Size(min  = 3, max = 100, message = "Il nome deve avere almeno 3 caratteri e massimo 100")
     private String nome;
 
     @Min(value = 0, message = "La quantità non puo essere negativa")

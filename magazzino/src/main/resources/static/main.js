@@ -28,6 +28,8 @@ document.querySelectorAll('.nav-links a').forEach(link => {
     if(target === "home"){
         form.reset();
         searchForm.reset();
+        await setOption("sottoCatDiv", "addSottoCategoria", "selectSottoCategoria",null, null, "addCategoria");
+        await setOption("sottoCatDivSearch", null, "selectSottoCategoriaSearch",null, null, "categoriaInput");
         getCategorie("selectCategoria", "addCategoria", "sottoCatDiv","addSottoCategoria", "selectSottoCategoria");
         getCategorie("selectCategoriaInput", "categoriaInput", "sottoCatDivSearch", null,"selectSottoCategoriaSearch");
         getUbicazione("selectUbicazione", "addUbicazione");
@@ -84,17 +86,23 @@ async function getCategorie(elementId, inputCat, div, input, selectSottoCategori
         setOption(div, input, selectSottoCategoria, modCat, null, inputCat);
     }
 
-    select.addEventListener("change", async (e) => {
-        setOption(div, input, selectSottoCategoria,null, e, inputCat);
-    });
+    if(!select.dataset.listerAttached){
+        select.addEventListener("change", async (e) => {
+            setOption(div, input, selectSottoCategoria,null, e, inputCat);
+        });
+        select.dataset.listenerAttached = "true";
+    }
+
 }
 
 async function setOption(div, input, selectSottoCategoria, modCat, e, inputCat){
     let value;
     if(e !== null && e !== undefined){
         value = e.target.value;
-    }else{
+    }else if (modCat !== null){
         value = modCat;
+    }else{
+        value = "";
     }
 
     document.getElementById(inputCat).value = value;
@@ -120,10 +128,13 @@ async function setOption(div, input, selectSottoCategoria, modCat, e, inputCat){
     }
 
     if(modCat === null) document.getElementById(div).innerHTML = "";
-    selectStc.addEventListener("change", async (e) =>{
-        const value = e.target.value;
-        if(value.trim() !== "") addSottoCategoria(value, div, input);
-    });
+    if (!selectStc.dataset.listenerAttached) {
+        selectStc.addEventListener("change", async (e) => {
+            const value = e.target.value;
+            if (value.trim() !== "") addSottoCategoria(value, div, input);
+        });
+        selectStc.dataset.listenerAttached = "true";
+    }
 }
 
 async function setDateSearch(){
@@ -322,21 +333,21 @@ document.getElementById("btnAddStcMod").addEventListener('click', (e) => {
 
 async function addSottoCategoria(value, div, input){
     let stcValue;
-    let stc;
+    const stc = document.getElementById(input);
     if(value == null){
-        stc = document.getElementById(input);
-        stcValue = stc.value.toLowerCase();;
+        stcValue = stc.value.toLowerCase();
     }else{
-        stcValue = value.toLowerCase();;
+        stcValue = value.toLowerCase();
     }
 
+    if(stc.value === "") return;
     const sottoCatDiv = document.getElementById(div);
     const elements = sottoCatDiv.querySelectorAll(".cardLabel");
     let exist = false;
     elements.forEach(el =>{
         if(el.innerText === stcValue){ exist = true; }
     });
-    if(exist){
+    if(exist && stc){
         stc.value = "";
         return;
     }
@@ -985,6 +996,8 @@ let formattedM;
 async function updateArticoliChecked(){
     const table = document.querySelector('#tabellaRicerca tbody');
     const rigaSelected = table.querySelectorAll('tr.selected');
+    document.getElementById("error").textContent = "";
+    document.getElementById("sottoCatDivMod").innerHTML = "";
 
     if (rigaSelected.length === 0) {
     showToast("Seleziona una riga", "warning");
@@ -1001,12 +1014,15 @@ async function updateArticoliChecked(){
     const richieste = rigaSelected[0].getAttribute("richieste");
     const idArticolo = rigaSelected[0].getAttribute("idArticolo");
     const nome = celle[0].innerText;
-    const elementsCat = celle[1].innerText.split("[");
+    const elementsCat = celle[1].innerText.split("[") ;
     const categoria = elementsCat[0].trim();
-    const stcs = elementsCat[1].replaceAll("]","").trim().split("\n");
-    stcs.forEach(stc =>{
-        addSottoCategoria(stc, "sottoCatDivMod", null)
-    });
+    if(elementsCat.length > 1){
+        const stcs = elementsCat[1].replaceAll("]","").trim().split("\n");
+        stcs.forEach(stc =>{
+            addSottoCategoria(stc, "sottoCatDivMod", null)
+        });
+    }
+
     const ubicazione = celle[2].innerText;
     const codice = celle[3].innerText;
     quantita = celle[4].innerText;
@@ -1022,6 +1038,7 @@ async function updateArticoliChecked(){
 
     document.querySelector('#modNome').value = nome;
     document.querySelector('#modCategoria').value = categoria;
+    document.querySelector('#addSottoCategoriaMod').value = "";
     document.querySelector('#modCodice').value = codice;
     document.querySelector('#modUbicazione').value = ubicazione;
     document.querySelector('#modQuantita').value = quantita;
@@ -1186,6 +1203,7 @@ async function updateCategoriaChecked(){
         }
     });
 
+let nomeUb;
 document.getElementById("updateBtnUb").addEventListener('click', updateUbicazioneChecked);
 async function updateUbicazioneChecked(){
     const table = document.querySelector('#tabellaUbicazioni tbody');
@@ -1203,19 +1221,20 @@ async function updateUbicazioneChecked(){
 
     document.getElementById("errorAlreadyExistsUb").innerText = "";
     const celle = rigaSelected[0].querySelectorAll('td');
-    const nome = celle[0].innerText;
+    nomeUb = celle[0].innerText;
 
-    document.querySelector('#modNomeUb').value = nome;
+    document.querySelector('#modNomeUb').value = nomeUb;
     document.querySelector('#modaleUpdateUb').classList.remove('hidden');
 
     document.querySelector('#btnChiudiUpdateUb').addEventListener('click', () => {
         document.querySelector('#modaleUpdateUb').classList.add('hidden');
     });
+}
 
     document.querySelector('#btnSalvaUpdateUb').addEventListener('click', async () =>{
         try{
             const newName = document.querySelector('#modNomeUb').value;
-            const response = await updateUbicazione(nome, newName);
+            const response = await updateUbicazione(nomeUb, newName);
 
             if(response.status != "BAD_REQUEST"){
                 document.querySelector('#modaleUpdateUb').classList.add('hidden');
@@ -1228,7 +1247,6 @@ async function updateUbicazioneChecked(){
             console.error(err);
         }
     });
-}
 
 
 export function showToast(message,type, time = 3000) {

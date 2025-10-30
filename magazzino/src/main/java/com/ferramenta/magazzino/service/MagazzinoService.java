@@ -358,7 +358,7 @@ public class MagazzinoService {
                 categoriaEntity.setSottoCategorie(listStc);
                 categoriaRepository.save(categoriaEntity);
             }
-        } else{
+        } else if(!capitalized.equals("Non categorizzato")){
             Categoria cat = new Categoria();
             cat.setNome(capitalized);
             cat.setSottoCategorie(sottoCategorie);
@@ -371,7 +371,7 @@ public class MagazzinoService {
     public String addUbicazione(String ubicazione){
         log.info("INIZIO - addUbicazione - nome ubicazione: {}", ubicazione);
         String capitalized = capitalize(ubicazione);
-        if(ubicazioneRepository.findByNome(capitalized) == null){
+        if(ubicazioneRepository.findByNome(capitalized) == null && !capitalized.equals("Non ubicato")){
             Ubicazione ub = new Ubicazione();
             ub.setNome(capitalized);
             ubicazioneRepository.save(ub);
@@ -408,6 +408,9 @@ public class MagazzinoService {
     public void updateCategoria(String oldCategoria, String newName, List<String> newStc){
 
         try{
+            if(capitalize(newName).equalsIgnoreCase("Non categorizzato")){
+                throw new AlreadyExistsException("Nome categoria non valido");
+            }
             log.info("INIZIO - updateCategoria - categoria da aggiornare : {} in {}", oldCategoria, newName);
             String newNameCap = capitalize(newName);
             String oldCap = capitalize(oldCategoria);
@@ -429,8 +432,12 @@ public class MagazzinoService {
             updateCategoriaInArticoli(oldCap, newNameCap);
             updateSottoCategoriaInArticoli(oldStc, newStc);
             log.info("FINE - updateCategoria - categoria aggiornata : {} in {}", oldCap, newNameCap);
+        }catch (AlreadyExistsException e){
+            log.error(e.getMessage());
+            throw new AlreadyExistsException(e.getMessage());
         }catch (Exception e){
             log.error(e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
 
     }
@@ -501,6 +508,7 @@ public class MagazzinoService {
     public void updateUbicazione(String oldUbicazione, String newName){
         log.info("INIZIO - updateUbicazione - ubicazione da aggiornare : {} in {}", oldUbicazione, newName);
         String newNameCap = capitalize(newName);
+        if(!newNameCap.equalsIgnoreCase("Non ubicato")){ throw new AlreadyExistsException("Nome ubicazione non valido"); }
         String oldCap = capitalize(oldUbicazione);
         if(ubicazioneRepository.findByNome(newNameCap) != null){
             throw new AlreadyExistsException("Ubicazione già presente");

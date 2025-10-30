@@ -287,6 +287,11 @@ th {
   gap: 10px;
   width: 100%;
 }
+
+.rowNoWidth{
+      display: flex;
+      gap: 10px;
+}
 .row.buttons {
   display: flex;
   justify-content: center;

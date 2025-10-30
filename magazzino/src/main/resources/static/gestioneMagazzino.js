@@ -47,7 +47,7 @@ export function creaTabellaArticoli(data){
 
         tr.addEventListener('click', () => {
             tr.classList.toggle("selected");
-            if(a.quantita <= 3){
+            if(a.quantita <= 2){
                 tr.classList.toggle("redTr");
             }
             if(a.quantita <= 5 && a.quantita > 2){
