@@ -106,13 +106,12 @@ async function setOption(div, input, selectSottoCategoria, modCat, e, inputCat){
     }
 
     document.getElementById(inputCat).value = value;
-    let cat = await ricercaCategorieSelect(value);
-    let stc = cat[0].sottoCategorie;
+    let stc = [];
     if(value !== ""){
-        cat = await ricercaCategorieSelect(value);
-        stc = cat[0].sottoCategorie;
-    }else{
-        stc = [];
+        let cat = await ricercaCategorieSelect(value);
+        if(cat.length > 0){
+            stc = cat[0].sottoCategorie;
+        }
     }
 
     const selectStc = document.getElementById(selectSottoCategoria);
@@ -340,7 +339,7 @@ async function addSottoCategoria(value, div, input){
         stcValue = value.toLowerCase();
     }
 
-    if(stc.value === "") return;
+    if(stc.value === "" && stcValue === "") return;
     const sottoCatDiv = document.getElementById(div);
     const elements = sottoCatDiv.querySelectorAll(".cardLabel");
     let exist = false;
