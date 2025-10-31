@@ -16,20 +16,20 @@ export function creaTabellaCategoria(data){
         const stc = cat.sottoCategorie !== null ? cat.sottoCategorie : "";
         let toStringStc = "";
         if(stc !== "" && stc !== null && stc.length > 0){
-        toStringStc = "["
-        for(let i = 0; i < stc.length; i++){
-            if(i == 0){
-                toStringStc += " " + stc[i];
-            }else{
-                toStringStc += " - " + stc[i];
+            toStringStc = ""
+            for(let i = 0; i < stc.length; i++){
+                if(i == 0){
+                    toStringStc += " " + stc[i];
+                }else{
+                    toStringStc += "<br>" + stc[i];
+                }
             }
-        }
-        toStringStc += " ]";
         }
         const tr = document.createElement('tr');
         tr.setAttribute('id', cat.id);
         tr.innerHTML = `
-            <td>${cat.nome} ${toStringStc}</td>
+            <td>${cat.nome}</td>
+            <td>${toStringStc}</td>
         `;
 
        tr.addEventListener('click', () => {

@@ -1156,13 +1156,14 @@ async function updateCategoriaChecked(){
     lista.innerHTML = "";
     document.getElementById("errorAlreadyExists").innerText = "";
     const celle = rigaSelected[0].querySelectorAll('td');
-    const nome = celle[0].innerText.split("[");
-    cat = nome[0].trim();
+    const nome = celle[0].innerText;
+    const stcs = celle[1].innerText.trim();
+    cat = nome.trim();
     const oldSottoCategorie = [];
     if(nome.length > 1){
-        const sottoCat = nome[1].split('-');
+        const sottoCat = stcs.split('\n');
         for(let i = 0; i < sottoCat.length; i++ ){
-            const value = sottoCat[i].replaceAll("]","").toLowerCase().trim();
+            const value = sottoCat[i].toLowerCase().trim();
             oldSottoCategorie.push(value);
             creaComponentSottoCategoria(lista, value);
         }
