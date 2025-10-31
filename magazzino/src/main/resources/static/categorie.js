@@ -6,7 +6,7 @@ export function creaTabellaCategoria(data){
 
     if(data.length === 0){
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td colspan="2">Nessuna categoria presente</td>`;
+        tr.innerHTML = `<td colspan="1">Nessuna categoria presente</td>`;
         tBody.appendChild(tr);
         return;
     }
@@ -46,7 +46,7 @@ export function creaTabellaUbicazione(data){
 
     if(data.length === 0){
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td colspan="2">Nessuna ubicazione presente</td>`;
+        tr.innerHTML = `<td colspan="1">Nessuna ubicazione presente</td>`;
         tBody.appendChild(tr);
         return;
     }
