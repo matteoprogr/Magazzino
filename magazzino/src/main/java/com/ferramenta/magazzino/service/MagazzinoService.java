@@ -12,6 +12,7 @@ import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 
 @Service
@@ -43,7 +44,7 @@ public class MagazzinoService {
         Articolo articolo = dtoToArticoloWithoutId(dto);
         articolo.setIdArticolo(idArticolo);
         articoliRepository.save(articolo);
-        updatedValoreMagazzino();
+        CompletableFuture.runAsync(this::updatedValoreMagazzino);
         log.info("FINE - addArticolo");
     }
 
@@ -65,7 +66,7 @@ public class MagazzinoService {
             }
             articolo.setIdArticolo(dto.getIdArticolo());
             articoliRepository.save(articolo);
-            if(dto.isUpdatedQuantita() || dto.isUpdatedCosto()){ updatedValoreMagazzino(); }
+            if(dto.isUpdatedQuantita() || dto.isUpdatedCosto()){ CompletableFuture.runAsync(this::updatedValoreMagazzino); }
         }catch (Exception e){
             log.error(e.getMessage());
             throw new RuntimeException(e);
