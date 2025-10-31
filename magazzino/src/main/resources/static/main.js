@@ -375,7 +375,7 @@ const form = document.getElementById("addForm");
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const sottoList = [];
-    const sottoCat = document.querySelectorAll(".cardLabel");
+    const sottoCat = form.querySelectorAll(".cardLabel");
     sottoCat.forEach(stc =>{
         const sottoCategoria = stc.innerText;
         sottoList.push(sottoCategoria);
@@ -391,6 +391,8 @@ form.addEventListener("submit", async (e) => {
         }
         const res = await aggiungiArticolo(articolo);
         console.log(res.messaggio);
+        form.reset();
+        document.getElementById("sottoCatDiv").innerHTML = "";
         const filtri = await creaFiltri();
         paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.sottoCategorie, filtri.ubicazione,
                                           filtri.da, filtri.a, filtri.daM, filtri.aM,
@@ -407,8 +409,6 @@ form.addEventListener("submit", async (e) => {
         showToast(msg ,"warning", 5000);
         return;
     }
-        form.reset();
-        document.getElementById("sottoCatDiv").innerHTML = "";
 });
 
 const addCategoriaForm = document.getElementById("addCategoriaForm");
