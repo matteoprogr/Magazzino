@@ -508,7 +508,7 @@ public class MagazzinoService {
     public void updateUbicazione(String oldUbicazione, String newName){
         log.info("INIZIO - updateUbicazione - ubicazione da aggiornare : {} in {}", oldUbicazione, newName);
         String newNameCap = capitalize(newName);
-        if(!newNameCap.equalsIgnoreCase("Non ubicato")){ throw new AlreadyExistsException("Nome ubicazione non valido"); }
+        if(newNameCap.equalsIgnoreCase("Non ubicato")){ throw new AlreadyExistsException("Nome ubicazione non valido"); }
         String oldCap = capitalize(oldUbicazione);
         if(ubicazioneRepository.findByNome(newNameCap) != null){
             throw new AlreadyExistsException("Ubicazione già presente");

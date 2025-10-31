@@ -339,7 +339,8 @@ async function addSottoCategoria(value, div, input){
         stcValue = value.toLowerCase();
     }
 
-    if(stc.value === "" && stcValue === "") return;
+
+    if(isValid(stc) && !isValid(stc.value) && !isValid(stcValue)) return;
     const sottoCatDiv = document.getElementById(div);
     const elements = sottoCatDiv.querySelectorAll(".cardLabel");
     let exist = false;
