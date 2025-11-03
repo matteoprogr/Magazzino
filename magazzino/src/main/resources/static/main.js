@@ -300,7 +300,7 @@ searchForm.addEventListener("submit", async (e) => {
     paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.sottoCategorie, filtri.ubicazione,
                                       filtri.da, filtri.a, filtri.daM, filtri.aM,
                                       filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
-                                      currentPage -1, pageSize, filtri.sortField, filtri.direzione));
+                                      0, pageSize, filtri.sortField, filtri.direzione));
 });
 
 
@@ -351,17 +351,16 @@ async function addSottoCategoria(value, div, input){
         stc.value = "";
         return;
     }
-    const length = elements.length;
     const container = document.createElement("div");
        container.innerHTML = `
          <div class="cardStc">
            <span class="cardLabel">${stcValue}</span>
-           <button type="button" id="${length}" class="cardBtn">x</button>
+           <button type="button" " class="cardBtn">x</button>
          </div>
        `;
        sottoCatDiv.appendChild(container);
        if(value == null) stc.value = "";
-       document.getElementById(length).addEventListener("click", (e) => {
+       container.addEventListener("click", (e) => {
           e.preventDefault();
           e.stopPropagation();
           container.remove();
