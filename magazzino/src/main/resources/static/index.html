@@ -23,7 +23,11 @@
 <section id="home" class="page-section active">
     <div class="ricerca-container">
         <div class="ricerca-form">
-            <h4>Aggiungi Articoli</h4>
+            <div class="row">
+                <h4>Aggiungi Articoli</h4>
+                <button class="reset" id="pulisciForm">pulisci form</button>
+            </div>
+
             <form id="addForm" class="form-container">
                 <input type="text" id="addNome" placeholder="Nome">
                 <input type="text" id="addCategoria" placeholder="Categoria">
@@ -42,7 +46,11 @@
                 <input type="number" id="addCosto" placeholder="Costo" max="1000000000" step="0.01">
                 <button type="submit">Aggiungi</button>
             </form>
-            <h4>Ricerca Articoli</h4>
+            <div class="row">
+                <h4>Ricerca Articoli</h4>
+                <button class="reset" id="resetSearch">reset filtri</button>
+            </div>
+
             <form id="ricercaForm" class="form-container">
                 <input type="text" id="nomeInput" placeholder="Nome">
                 <input type="text" id="codiceInput" placeholder="Codice">

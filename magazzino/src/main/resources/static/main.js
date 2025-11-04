@@ -245,6 +245,18 @@ async function resetFiltri(){
                                           currentPage -1, pageSize, filtri.sortField, filtri.direzione));
 }
 
+document.getElementById("resetSearch").addEventListener('click', function (e){
+    e.preventDefault();
+    searchForm.reset();
+    document.getElementById("sottoCatDivSearch").innerHTML = "";
+    setDateSearch();
+});
+document.getElementById("pulisciForm").addEventListener('click', function (e){
+    e.preventDefault();
+    form.reset();
+    document.getElementById("sottoCatDiv").innerHTML = "";
+});
+
 async function configurazioneSortIndicator(){
     const headers = document.querySelectorAll('#tabellaRicerca th');
     let currentSort = {col: null, dir: "DESC"};
@@ -347,10 +359,10 @@ async function addSottoCategoria(value, div, input){
     elements.forEach(el =>{
         if(el.innerText === stcValue){ exist = true; }
     });
-    if(exist && stc){
-        stc.value = "";
-        return;
-    }
+
+    if(exist && stc){ stc.value = ""; }
+    if(exist){ return; }
+
     const container = document.createElement("div");
        container.innerHTML = `
          <div class="cardStc">
@@ -546,6 +558,7 @@ export async function ricercaArticoli(nome, codice, categoria, sottoCategorie, u
         showToast("Errore durante l'esecuzione della ricerca");
     }
 }
+
 
 export async function ricercaArticoliGraph(anno){
     try{

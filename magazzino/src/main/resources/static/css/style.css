@@ -197,6 +197,10 @@ th {
 .yellowTr{
     background-color: #fff3cd;
 }
+.purpleTr{
+    background-color:#e2d7f8;
+    font-weight: bold;
+}
 
 .ricercaCat-container {
     display: flex;

@@ -2,7 +2,7 @@ export function creaTabellaArticoli(data){
     const tBody = document.querySelector('#tabellaRicerca tbody');
     tBody.innerHTML = '';
 
-    if(data.length === 0){
+    if(data.length === 1){
         const tr = document.createElement('tr');
         tr.innerHTML = '<td colspan="3">Nessun articolo trovato</td>';
         tBody.appendChild(tr);
@@ -11,59 +11,95 @@ export function creaTabellaArticoli(data){
 
     data.forEach(a => {
         const tr = document.createElement('tr');
-        tr.setAttribute('id', a.id);
-        tr.setAttribute('richieste', a.richieste);
-        tr.setAttribute('idArticolo', a.idArticolo);
-        const [y, m, d] = a.dataInserimento.split("-");
-        const data = `${d}/${m}/${y}`;
-        const [yM, mM, dM] = a.dataModifica.split("-");
-        const dataModifica = `${dM}/${mM}/${yM}`;
-        const stc = a.sottoCategorie !== null ? a.sottoCategorie : "";
         let toStringStc = "";
-        if(stc !== "" && stc !== null && stc.length > 0){
-        toStringStc = "["
-        for(let i = 0; i < stc.length; i++){
-            if(i == 0){
-                toStringStc += " " + stc[i];
-            }else{
-                toStringStc += '<br>' + stc[i];
+        let dataModifica = "";
+        let dataIns = "";
+        if(a.codice !== "Totale:"){
+            tr.setAttribute('id', a.id);
+            tr.setAttribute('richieste', a.richieste);
+            tr.setAttribute('idArticolo', a.idArticolo);
+            const [y, m, d] = a.dataInserimento.split("-");
+            dataIns = `${d}/${m}/${y}`;
+            const [yM, mM, dM] = a.dataModifica.split("-");
+            dataModifica = `${dM}/${mM}/${yM}`;
+            const stc = a.sottoCategorie !== null ? a.sottoCategorie : "";
+
+            if(stc !== "" && stc !== null && stc.length > 0){
+            toStringStc = "["
+            for(let i = 0; i < stc.length; i++){
+                if(i == 0){
+                    toStringStc += " " + stc[i];
+                }else{
+                    toStringStc += '<br>' + stc[i];
+                }
             }
-        }
-        toStringStc += " ]";
-        }
+            toStringStc += " ]";
+            }
 
-        tr.innerHTML = `
-            <td>${a.nome}</td>
-            <td>${a.categoria} <br> ${toStringStc}</td>
-            <td>${a.ubicazione}</td>
-            <td>${a.codice}</td>
-            <td>${a.quantita}</td>
-            <td>${a.costo}</td>
-            <td>${a.costoUnita.toFixed(2)}</td>
-            <td>${a.valore.toFixed(2)}</td>
-            <td>${data}</td>
-            <td>${dataModifica}</td>
-        `;
+            tr.innerHTML = `
+                <td>${a.nome}</td>
+                <td>${a.categoria} <br> ${toStringStc}</td>
+                <td>${a.ubicazione}</td>
+                <td>${a.codice}</td>
+                <td>${a.quantita}</td>
+                <td>${a.costo}</td>
+                <td>${a.costoUnita.toFixed(2)}</td>
+                <td>${a.valore.toFixed(2)}</td>
+                <td>${dataIns}</td>
+                <td>${dataModifica}</td>
+            `;
 
-        tr.addEventListener('click', () => {
-            tr.classList.toggle("selected");
+            tr.addEventListener('click', () => {
+                tr.classList.toggle("selected");
+                if(a.quantita <= 2){
+                    tr.classList.toggle("redTr");
+                }
+                if(a.quantita <= 5 && a.quantita > 2){
+                    tr.classList.toggle("yellowTr");
+                }
+            });
             if(a.quantita <= 2){
-                tr.classList.toggle("redTr");
+                tr.classList.add("redTr");
             }
             if(a.quantita <= 5 && a.quantita > 2){
-                tr.classList.toggle("yellowTr");
+                tr.classList.add("yellowTr");
             }
-        });
-        if(a.quantita <= 2){
-            tr.classList.add("redTr");
-        }
-        if(a.quantita <= 5 && a.quantita > 2){
-            tr.classList.add("yellowTr");
+        }else{
+
+            const stc = a.sottoCategorie !== null ? a.sottoCategorie : "";
+
+            if(stc !== "" && stc !== null && stc.length > 0){
+            toStringStc = "["
+            for(let i = 0; i < stc.length; i++){
+                if(i == 0){
+                    toStringStc += " " + stc[i];
+                }else{
+                    toStringStc += '<br>' + stc[i];
+                }
+            }
+            toStringStc += " ]";
+            }
+            tr.innerHTML = `
+
+                <td>${a.nome}</td>
+                <td>${a.categoria} <br> ${toStringStc}</td>
+                <td>${a.ubicazione}</td>
+                <td>${a.codice}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>${a.valore.toFixed(2)}</td>
+                <td></td>
+                <td></td>
+            `;
+
+            tr.classList.add("purpleTr");
         }
 
         tBody.appendChild(tr);
     });
 }
+
 
 function setData(merce, entrata, uscita){
     merce.forEach( item => {

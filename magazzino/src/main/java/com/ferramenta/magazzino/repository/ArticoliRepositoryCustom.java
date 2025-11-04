@@ -42,4 +42,12 @@ public interface ArticoliRepositoryCustom {
             Integer minCosto,
             Integer maxCosto
     );
+
+    Double sommaCampoEntity(
+            String campo,
+            String nome,
+            String categoria,
+            List<String> sottoCategorie,
+            String ubicazione
+    );
 }

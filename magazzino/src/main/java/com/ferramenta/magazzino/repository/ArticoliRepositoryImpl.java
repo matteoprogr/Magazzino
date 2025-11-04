@@ -153,7 +153,7 @@ public class ArticoliRepositoryImpl implements ArticoliRepositoryCustom {
 
 
         Query query;
-        if(tipoRicerca.contains("COUNT")){
+        if(tipoRicerca.contains("COUNT") || tipoRicerca.contains("SUM")){
             query = entityManager.createNativeQuery(sql.toString());
         }else{
             query = entityManager.createNativeQuery(sql.toString(), Articolo.class);
@@ -190,4 +190,32 @@ public class ArticoliRepositoryImpl implements ArticoliRepositoryCustom {
         return query;
     }
 
+
+    @Override
+    public Double sommaCampoEntity(
+            String campo,
+            String nome,
+            String categoria,
+            List<String> sottoCategorie,
+            String ubicazione
+    ) {
+
+        String campoSanificato = sanitizeColumn(campo);
+
+        Query query = creaQuery(
+                "SELECT SUM(" + campoSanificato + ") ",
+                nome, categoria, sottoCategorie, ubicazione, null, null, null, null, null,
+                null, null, null, null,
+                Integer.MAX_VALUE, 0, null, null
+        );
+
+        Object result = query.getSingleResult();
+        if (result == null) return 0.0;
+
+        if (result instanceof Number number) {
+            return number.doubleValue();
+        } else {
+            return 0.0;
+        }
+    }
 }

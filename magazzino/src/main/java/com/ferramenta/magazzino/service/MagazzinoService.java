@@ -102,12 +102,25 @@ public class MagazzinoService {
             limit = Integer.MAX_VALUE;
         }
         List<Articolo> list = articoliRepository.searchArticoliEntity(nome, capitalize(categoria), sottoCategorie, capitalize(ubicazione),codice, da, a, daM, aM, min, max, minCosto, maxCosto, limit, offset, sortField, direzione);
+        Articolo articolo = creaTotArticolo(nome, capitalize(categoria), sottoCategorie, capitalize(ubicazione));
+        articolo.setValore(articoliRepository.sommaCampoEntity("valore", nome, capitalize(categoria), sottoCategorie, capitalize(ubicazione)));
+        list.add(articolo);
         long count = articoliRepository.countArticoliEntity(nome, capitalize(categoria),sottoCategorie, capitalize(ubicazione),codice, da, a, daM, aM, min, max, minCosto, maxCosto);
         log.info("FINE - ricercaArticoliEntity - risultati: {}", count);
         return EntityResponseDto.builder()
                 .entity(list)
                 .count(count)
                 .build();
+    }
+
+    private Articolo creaTotArticolo(String nome, String categoria, List<String> stc, String ubicazione){
+        Articolo articolo = new Articolo();
+        articolo.setNome(nome != null ? nome : "");
+        articolo.setCategoria(categoria != null ? categoria : "");
+        articolo.setSottoCategorie(stc != null ? stc : new ArrayList<>());
+        articolo.setUbicazione(ubicazione != null ? ubicazione : "");
+        articolo.setCodice("Totale:");
+        return articolo;
     }
 
     public EntityResponseDto ricercaArticoliGrafico(String anno){
@@ -174,8 +187,15 @@ public class MagazzinoService {
             saveMerce(dto);
         }else if(dto.isUpdatedQuantita()){
             articolo.setRichieste(richieste + 1);
-            costoUnita = dto.getCostoUnita();
-            dto.setCostoUnita(costoUnita);
+
+            if(dto.isUpdatedCosto()){
+                costoUnita = dto.getCosto() / dto.getQuantita();
+                if(Double.isNaN(costoUnita)) costoUnita = 0;
+            }else{
+                costoUnita = dto.getCostoUnita();
+                dto.setCostoUnita(costoUnita);
+            }
+
             updateMerce(dto);
         }else if(dto.isUpdatedCosto()){
             costoUnita = dto.getCosto() / dto.getQuantita();
