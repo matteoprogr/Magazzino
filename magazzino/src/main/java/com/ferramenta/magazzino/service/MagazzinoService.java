@@ -104,6 +104,8 @@ public class MagazzinoService {
         List<Articolo> list = articoliRepository.searchArticoliEntity(nome, capitalize(categoria), sottoCategorie, capitalize(ubicazione),codice, da, a, daM, aM, min, max, minCosto, maxCosto, limit, offset, sortField, direzione);
         Articolo articolo = creaTotArticolo(nome, capitalize(categoria), sottoCategorie, capitalize(ubicazione));
         articolo.setValore(articoliRepository.sommaCampoEntity("valore", nome, capitalize(categoria), sottoCategorie, capitalize(ubicazione)));
+        articolo.setQuantita( articoliRepository.sommaCampoEntity("quantita", nome, capitalize(categoria), sottoCategorie, capitalize(ubicazione)).intValue());
+        articolo.setCosto(articoliRepository.sommaCampoEntity("costo", nome, capitalize(categoria), sottoCategorie, capitalize(ubicazione)));
         list.add(articolo);
         long count = articoliRepository.countArticoliEntity(nome, capitalize(categoria),sottoCategorie, capitalize(ubicazione),codice, da, a, daM, aM, min, max, minCosto, maxCosto);
         log.info("FINE - ricercaArticoliEntity - risultati: {}", count);

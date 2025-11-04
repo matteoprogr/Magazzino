@@ -85,8 +85,8 @@ export function creaTabellaArticoli(data){
                 <td>${a.categoria} <br> ${toStringStc}</td>
                 <td>${a.ubicazione}</td>
                 <td>${a.codice}</td>
-                <td></td>
-                <td></td>
+                <td>${a.quantita}</td>
+                <td>${a.costo.toFixed(2)}</td>
                 <td></td>
                 <td>${a.valore.toFixed(2)}</td>
                 <td></td>
