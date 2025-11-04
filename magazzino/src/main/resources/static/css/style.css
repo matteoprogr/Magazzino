@@ -110,15 +110,7 @@ th {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 1rem;
-    margin-top: 10px;
-}
-
-.pagination-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
+    gap: 0.5rem;
     margin-top: 10px;
 }
 
@@ -218,7 +210,6 @@ th {
 .ricerca-form {
     flex: 0 0 auto;
     overflow-y: auto;
-    scrollbar-width: none;
     height: 90vh;
 }
 
@@ -245,7 +236,6 @@ th {
     max-height: 90vh;
     min-height: 90vh;
     overflow-y: auto;
-    scrollbar-width: none;
 }
 
 .tabella-container {
@@ -253,7 +243,6 @@ th {
     min-width: 0;
     height: 90vh;
     overflow-y: auto;
-    scrollbar-width: none;
 }
 
 .modal {

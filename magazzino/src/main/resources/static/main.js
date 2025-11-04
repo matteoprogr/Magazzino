@@ -110,7 +110,8 @@ async function setOption(div, input, selectSottoCategoria, modCat, e, inputCat){
     if(value !== ""){
         let cat = await ricercaCategorieSelect(value);
         if(cat.length > 0){
-            stc = cat[0].sottoCategorie;
+            const catFound = cat.find(c => c.nome === value);
+            stc = catFound.sottoCategorie;
         }
     }
 
@@ -587,7 +588,8 @@ export async function ricercaCategorie(categoria, page = 0, size = 10){
         const json = await res.json();
         const entity = json.entity;
         const risultati = json.count;
-        creaTabellaCategoria(entity);
+        const sortCats = entity.sort((a,b) =>a.nome.localeCompare(b.nome));
+        creaTabellaCategoria(sortCats);
         labelCat.textContent = `Totale risultati: ${risultati}`;
         return risultati;
     }catch(err){
@@ -605,7 +607,8 @@ export async function ricercaCategorieSelect(categoria, page = 0, size = 0){
 
         const res = await fetch(`${API_BASE_URL}/ricercaCategorie?${params}`);
         const json = await res.json();
-        return json.entity;
+        const sortCats = json.entity.sort((a,b) =>a.nome.localeCompare(b.nome));
+        return sortCats;
     }catch(err){
         console.error(err)
         showToast("Errore durante l'esecuzione della ricerca");
