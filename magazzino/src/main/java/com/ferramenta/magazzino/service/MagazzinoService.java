@@ -183,8 +183,12 @@ public class MagazzinoService {
         int richieste = dto.getRichieste();
         if(richieste == 0){
             articolo.setRichieste(1);
-            costoUnita = dto.getCosto() / dto.getQuantita();
-            if(Double.isNaN(costoUnita)) costoUnita = 0;
+            if(dto.getQuantita() == 0){
+                costoUnita = dto.getCosto();
+            }else{
+                costoUnita = dto.getCosto() / dto.getQuantita();
+                if(Double.isNaN(costoUnita)) costoUnita = 0;
+            }
             dto.setCostoUnita(costoUnita);
             saveMerce(dto);
         }else if(dto.isUpdatedQuantita()){
