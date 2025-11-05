@@ -644,7 +644,8 @@ export async function ricercaUbicazioni(ubicazione, page = 0, size = 10){
         const json = await res.json();
         const entity = json.entity;
         const risultati = json.count;
-        creaTabellaUbicazione(entity);
+        const sortUbs = entity.sort((a,b) =>a.nome.localeCompare(b.nome));
+        creaTabellaUbicazione(sortUbs);
         labelUb.textContent = `Totale risultati: ${risultati}`;
         return risultati;
     }catch(err){
@@ -661,7 +662,8 @@ export async function ricercaUbicazioneSelect(ubicazione, page = 0, size = 0){
 
         const res = await fetch(`${API_BASE_URL}/ricercaUbicazioni?${params}`);
         const json = await res.json();
-        return json.entity;
+        const sortUbs = json.entity.sort((a,b) =>a.nome.localeCompare(b.nome));
+        return sortUbs;
     }catch(err){
         console.error(err)
     }
