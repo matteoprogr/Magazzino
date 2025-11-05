@@ -75,10 +75,11 @@ public class MagazzinoController {
             @RequestParam(required = false) Integer maxCosto,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "25") int size,
-            @RequestParam(defaultValue = "DESC") String direzione) {
+            @RequestParam(defaultValue = "DESC") String direzione,
+            @RequestParam(defaultValue = "false") boolean exactMatch) {
 
         try{
-            return magazzinoService.ricercaArticoliEntity(nome, categoria, sottoCategorie, ubicazione, codice, da, a, daM, aM, min, max, minCosto, maxCosto,size,page * size, sortField,direzione);
+            return magazzinoService.ricercaArticoliEntity(nome, categoria, sottoCategorie, ubicazione, codice, da, a, daM, aM, min, max, minCosto, maxCosto,size,page * size, sortField,direzione,exactMatch);
 
         }catch (Exception e){
             throw new RuntimeException(e);

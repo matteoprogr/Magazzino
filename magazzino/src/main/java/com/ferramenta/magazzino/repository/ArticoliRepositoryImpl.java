@@ -33,10 +33,11 @@ public class ArticoliRepositoryImpl implements ArticoliRepositoryCustom {
             int limit,
             int offset,
             String orderBy,
-            String direction
+            String direction,
+            boolean exactMatch
     ) {
         Query query = creaQuery("SELECT * ",nome, categoria, sottoCategorie, ubicazione, codice, da, a, daM, aM,
-                minQuantita, maxQuantita, minCosto, maxCosto, limit, offset, orderBy, direction);
+                minQuantita, maxQuantita, minCosto, maxCosto, limit, offset, orderBy, direction, exactMatch);
 
         return query.getResultList();
     }
@@ -55,10 +56,11 @@ public class ArticoliRepositoryImpl implements ArticoliRepositoryCustom {
             Integer minQuantita,
             Integer maxQuantita,
             Integer minCosto,
-            Integer maxCosto
+            Integer maxCosto,
+            boolean exactMatch
     ) {
         Query query = creaQuery("SELECT COUNT(*) ",nome, categoria, sottoCategorie, ubicazione, codice, da, a, daM, aM,
-                minQuantita, maxQuantita, minCosto, maxCosto, Integer.MAX_VALUE, 0, null, null);
+                minQuantita, maxQuantita, minCosto, maxCosto, Integer.MAX_VALUE, 0, null, null, exactMatch);
 
         Object result = query.getSingleResult();
 
@@ -106,13 +108,26 @@ public class ArticoliRepositoryImpl implements ArticoliRepositoryCustom {
         int limit,
         int offset,
         String orderBy,
-        String direction){
+        String direction,
+        boolean exactMatch){
 
         StringBuilder sql = new StringBuilder(tipoRicerca + "FROM articolo WHERE is_active = 1");
         List<String> conditions = new ArrayList<>();
 
-        if (nome != null && !nome.isEmpty()) conditions.add("LOWER(nome) LIKE LOWER(CONCAT('%', :nome, '%'))");
-        if (categoria != null && !categoria.isEmpty()) conditions.add("LOWER(categoria) LIKE LOWER(CONCAT('%', :categoria, '%'))");
+        if (nome != null && !nome.isEmpty()) {
+            if(exactMatch){
+                conditions.add("LOWER(nome) = LOWER(:nome)");
+            }else{
+                conditions.add("LOWER(nome) LIKE LOWER(CONCAT('%', :nome, '%'))");
+            }
+        }
+        if (categoria != null && !categoria.isEmpty()) {
+            if(exactMatch){
+                conditions.add("LOWER(categoria) = LOWER(:categoria)");
+            }else{
+                conditions.add("LOWER(categoria) LIKE LOWER(CONCAT('%', :categoria, '%'))");
+            }
+        }
         if (sottoCategorie != null && !sottoCategorie.isEmpty()) {
             List<String> sottoCatConditions = new ArrayList<>();
             for (int i = 0; i < sottoCategorie.size(); i++) {
@@ -121,7 +136,13 @@ public class ArticoliRepositoryImpl implements ArticoliRepositoryCustom {
             conditions.add("(" + String.join(" OR ", sottoCatConditions) + ")");
         }
 
-        if (ubicazione != null && !ubicazione.isEmpty()) conditions.add("LOWER(ubicazione) LIKE LOWER(CONCAT('%', :ubicazione, '%'))");
+        if (ubicazione != null && !ubicazione.isEmpty()) {
+            if(exactMatch){
+                conditions.add("LOWER(ubicazione) = LOWER(:ubicazione)");
+            }else{
+                conditions.add("LOWER(ubicazione) LIKE LOWER(CONCAT('%', :ubicazione, '%'))");
+            }
+        }
         if (codice != null && !codice.isEmpty()) conditions.add("LOWER(codice) LIKE LOWER(CONCAT('%', :codice, '%'))");
 
         if (minQuantita != null) conditions.add("quantita >= :minQuantita");
@@ -197,7 +218,8 @@ public class ArticoliRepositoryImpl implements ArticoliRepositoryCustom {
             String nome,
             String categoria,
             List<String> sottoCategorie,
-            String ubicazione
+            String ubicazione,
+            boolean exactMatch
     ) {
 
         String campoSanificato = sanitizeColumn(campo);
@@ -206,7 +228,7 @@ public class ArticoliRepositoryImpl implements ArticoliRepositoryCustom {
                 "SELECT SUM(" + campoSanificato + ") ",
                 nome, categoria, sottoCategorie, ubicazione, null, null, null, null, null,
                 null, null, null, null,
-                Integer.MAX_VALUE, 0, null, null
+                Integer.MAX_VALUE, 0, null, null, exactMatch
         );
 
         Object result = query.getSingleResult();

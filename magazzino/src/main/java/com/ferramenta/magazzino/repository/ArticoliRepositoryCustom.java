@@ -24,7 +24,8 @@ public interface ArticoliRepositoryCustom {
             int limit,
             int offset,
             String orderBy,
-            String direction
+            String direction,
+            boolean exactMatch
     );
 
     int countArticoliEntity(
@@ -40,7 +41,8 @@ public interface ArticoliRepositoryCustom {
             Integer minQuantita,
             Integer maxQuantita,
             Integer minCosto,
-            Integer maxCosto
+            Integer maxCosto,
+            boolean exactMatch
     );
 
     Double sommaCampoEntity(
@@ -48,6 +50,7 @@ public interface ArticoliRepositoryCustom {
             String nome,
             String categoria,
             List<String> sottoCategorie,
-            String ubicazione
+            String ubicazione,
+            boolean exactMatch
     );
 }

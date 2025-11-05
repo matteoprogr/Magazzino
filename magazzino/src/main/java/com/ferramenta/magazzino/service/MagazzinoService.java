@@ -93,7 +93,7 @@ public class MagazzinoService {
         log.info("FINE - deleteArticolo");
     }
 
-    public EntityResponseDto ricercaArticoliEntity(String nome, String categoria, List<String> sottoCategorie,String ubicazione, String codice, String da, String a, String daM, String aM ,Integer min, Integer max, Integer minCosto, Integer maxCosto, int limit, int offset, String sortField, String direzione){
+    public EntityResponseDto ricercaArticoliEntity(String nome, String categoria, List<String> sottoCategorie,String ubicazione, String codice, String da, String a, String daM, String aM ,Integer min, Integer max, Integer minCosto, Integer maxCosto, int limit, int offset, String sortField, String direzione, boolean exactMatch){
         log.info("INIZIO - ricercaArticoliEntity");
         if(sortField == null || sortField.isEmpty()){
             sortField = "richieste";
@@ -101,13 +101,13 @@ public class MagazzinoService {
         if(limit == 0){
             limit = Integer.MAX_VALUE;
         }
-        List<Articolo> list = articoliRepository.searchArticoliEntity(nome, capitalize(categoria), sottoCategorie, capitalize(ubicazione),codice, da, a, daM, aM, min, max, minCosto, maxCosto, limit, offset, sortField, direzione);
+        List<Articolo> list = articoliRepository.searchArticoliEntity(nome, capitalize(categoria), sottoCategorie, capitalize(ubicazione),codice, da, a, daM, aM, min, max, minCosto, maxCosto, limit, offset, sortField, direzione,exactMatch);
         Articolo articolo = creaTotArticolo(nome, capitalize(categoria), sottoCategorie, capitalize(ubicazione));
-        articolo.setValore(articoliRepository.sommaCampoEntity("valore", nome, capitalize(categoria), sottoCategorie, capitalize(ubicazione)));
-        articolo.setQuantita( articoliRepository.sommaCampoEntity("quantita", nome, capitalize(categoria), sottoCategorie, capitalize(ubicazione)).intValue());
-        articolo.setCosto(articoliRepository.sommaCampoEntity("costo", nome, capitalize(categoria), sottoCategorie, capitalize(ubicazione)));
+        articolo.setValore(articoliRepository.sommaCampoEntity("valore", nome, capitalize(categoria), sottoCategorie, capitalize(ubicazione),exactMatch));
+        articolo.setQuantita( articoliRepository.sommaCampoEntity("quantita", nome, capitalize(categoria), sottoCategorie, capitalize(ubicazione),exactMatch).intValue());
+        articolo.setCosto(articoliRepository.sommaCampoEntity("costo", nome, capitalize(categoria), sottoCategorie, capitalize(ubicazione),exactMatch));
         list.add(articolo);
-        long count = articoliRepository.countArticoliEntity(nome, capitalize(categoria),sottoCategorie, capitalize(ubicazione),codice, da, a, daM, aM, min, max, minCosto, maxCosto);
+        long count = articoliRepository.countArticoliEntity(nome, capitalize(categoria),sottoCategorie, capitalize(ubicazione),codice, da, a, daM, aM, min, max, minCosto, maxCosto,exactMatch);
         log.info("FINE - ricercaArticoliEntity - risultati: {}", count);
         return EntityResponseDto.builder()
                 .entity(list)

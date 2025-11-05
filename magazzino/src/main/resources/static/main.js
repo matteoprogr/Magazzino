@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria,filtri.sottoCategorie, filtri.ubicazione,
                                       filtri.da, filtri.a, filtri.daM, filtri.aM,
                                       filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
-                                      currentPage -1, pageSize, filtri.sortField, "DESC"));
+                                      currentPage -1, pageSize, filtri.sortField, "DESC", false));
 });
 
 
@@ -196,6 +196,7 @@ async function creaFiltri(){
     const maxInput = document.getElementById("maxInput").value;
     const minCostoInput = document.getElementById("minCostoInput").value;
     const maxCostoInput = document.getElementById("maxCostoInput").value;
+    const exactMatch = document.getElementById("exactMatch").checked;
     const activeHeader = document.querySelector('#tabellaRicerca th.active');
     let sortField = "";
     let direzione = "";
@@ -226,7 +227,8 @@ async function creaFiltri(){
         minCosto: minCostoInput !== "" ? minCostoInput : null,
         maxCosto: maxCostoInput !== "" ? maxCostoInput : null,
         sortField: sortField !== "" ? sortField : "richieste",
-        direzione: direzione !== "" ? direzione : "DESC"
+        direzione: direzione !== "" ? direzione : "DESC",
+        exactMatch: exactMatch === true ? true : false
     };
 
     return filtri;
@@ -243,7 +245,7 @@ async function resetFiltri(){
     paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria,filtri.sottoCategorie, filtri.ubicazione,
                                           filtri.da, filtri.a, filtri.daM, filtri.aM,
                                           filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
-                                          currentPage -1, pageSize, filtri.sortField, filtri.direzione));
+                                          currentPage -1, pageSize, filtri.sortField, filtri.direzione, filtri.exactMatch));
 }
 
 document.getElementById("resetSearch").addEventListener('click', function (e){
@@ -274,7 +276,7 @@ async function configurazioneSortIndicator(){
             paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria,filtri.sottoCategorie, filtri.ubicazione,
                                                   filtri.da, filtri.a, filtri.daM, filtri.aM,
                                                   filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
-                                                  currentPage -1, pageSize, filtri.sortField, filtri.direzione));
+                                                  currentPage -1, pageSize, filtri.sortField, filtri.direzione, filtri.exactMatch));
         });
     });
     updateSortIndicators(headers, currentSort,reset);
@@ -313,7 +315,7 @@ searchForm.addEventListener("submit", async (e) => {
     paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.sottoCategorie, filtri.ubicazione,
                                       filtri.da, filtri.a, filtri.daM, filtri.aM,
                                       filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
-                                      0, pageSize, filtri.sortField, filtri.direzione));
+                                      0, pageSize, filtri.sortField, filtri.direzione, filtri.exactMatch));
 });
 
 
@@ -409,7 +411,7 @@ form.addEventListener("submit", async (e) => {
         paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.sottoCategorie, filtri.ubicazione,
                                           filtri.da, filtri.a, filtri.daM, filtri.aM,
                                           filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
-                                          currentPage -1, pageSize, filtri.sortField, filtri.direzione));
+                                          currentPage -1, pageSize, filtri.sortField, filtri.direzione, filtri.exactMatch));
 
         getCategorie("selectCategoria", "addCategoria", "sottoCatDiv","addSottoCategoria", "selectSottoCategoria");
         getCategorie("selectCategoriaInput", "categoriaInput", "sottoCatDivSearch", null,"selectSottoCategoriaSearch");
@@ -525,7 +527,7 @@ export async function aggiungiUbicazione(ubicazioneDto){
 
 ///////////////// RICERCA ///////////////////////
 export async function ricercaArticoli(nome, codice, categoria, sottoCategorie, ubicazione, da, a, daM, aM, min, max, minCosto, maxCosto,
-                                      page = 0, size = 25, sortField, direzione = "DESC"){
+                                      page = 0, size = 25, sortField, direzione = "DESC", exactMatch = false){
     try{
         const labelRisultati = document.getElementById("totRisultati");
         const params = new URLSearchParams();
@@ -542,6 +544,7 @@ export async function ricercaArticoli(nome, codice, categoria, sottoCategorie, u
         if(max !== undefined && max !== null) params.append("max", max);
         if(minCosto !== undefined && minCosto !== null) params.append("minCosto", minCosto);
         if(maxCosto !== undefined && maxCosto !== null) params.append("maxCosto", maxCosto);
+        params.append("exactMatch", exactMatch);
         params.append("page", page);
         params.append("size", size);
         if(sortField) params.append("sortField", sortField);
@@ -687,7 +690,7 @@ async function deleteArticoli(ids){
     paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria,filtri.sottoCategorie, filtri.ubicazione,
                                       filtri.da, filtri.a, filtri.daM, filtri.aM,
                                       filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
-                                      currentPage -1, pageSize, filtri.sortField, filtri.direzione));
+                                      currentPage -1, pageSize, filtri.sortField, filtri.direzione, filtri.exactMatch));
 
     }catch(err){
         console.error('Errore', err.message);
@@ -755,7 +758,7 @@ async function updateArticolo(dto){
         paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.sottoCategorie, filtri.ubicazione,
                                           filtri.da, filtri.a, filtri.daM, filtri.aM,
                                           filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
-                                          currentPage -1, pageSize, filtri.sortField, filtri.direzione));
+                                          currentPage -1, pageSize, filtri.sortField, filtri.direzione, filtri.exactMatch));
         return data;
     }catch(err){
         console.error(err);
@@ -835,7 +838,7 @@ prevBtn.addEventListener("click", async () => {
         paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.sottoCategorie, filtri.ubicazione,
                                           filtri.da, filtri.a, filtri.daM, filtri.aM,
                                           filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
-                                          currentPage -1, pageSize, filtri.sortField, filtri.direzione));
+                                          currentPage -1, pageSize, filtri.sortField, filtri.direzione, filtri.exactMatch));
     }
 });
 
@@ -845,7 +848,7 @@ nextBtn.addEventListener("click", async () => {
     paginazione(await ricercaArticoli(filtri.nome, filtri.codice, filtri.categoria, filtri.sottoCategorie, filtri.ubicazione,
                                       filtri.da, filtri.a, filtri.daM, filtri.aM,
                                       filtri.min, filtri.max, filtri.minCosto, filtri.maxCosto,
-                                      currentPage -1, pageSize, filtri.sortField, filtri.direzione));
+                                      currentPage -1, pageSize, filtri.sortField, filtri.direzione, filtri.exactMatch));
 });
 
 ////////// PAGINAZIONE CATEGORIE //////////////
